@@ -1,0 +1,222 @@
+-- Function to play animations
+local function playAnimation(id, timePos, speed, duration, fade)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://" .. tostring(id)
+    local track = humanoid:LoadAnimation(animation)
+    fade = fade or 0.5
+    track:Play(fade)
+    track.TimePosition = timePos or 0
+    track:AdjustSpeed(speed or 1)
+    task.delay(duration or 1, function()
+        track:Stop(fade)
+    end)
+    return track
+end
+
+-- Function to loop animations
+local function loopAnimation(id, speed, duration, fade)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://" .. tostring(id)
+    local track = humanoid:LoadAnimation(animation)
+    local playing = true
+    fade = fade or 0.3
+    task.delay(duration, function()
+        playing = false
+        track:Stop(fade)
+    end)
+    task.spawn(function()
+        while playing do
+            track:Play(fade)
+            track.TimePosition = 0
+            track:AdjustSpeed(speed)
+            task.wait(track.Length / math.abs(speed))
+        end
+    end)
+end
+
+-- Start-up animations
+playAnimation(190071033, 0, 0.5, 0.2)
+task.wait(0.2)
+playAnimation(184573779, 0, 0.8, 0.5)
+playAnimation(203875401, 10, -0.8, 1)
+playAnimation(287325678, 1.3, 0.5, 0.4)
+task.wait(0.6)
+
+-- Step Backwards animations
+playAnimation(68433924, 0.5, 0, 1)
+playAnimation(215384594, 0, 0.3, 0.6, 0.6)
+playAnimation(306352073, 1.3, 0.5, 1)
+playAnimation(287325678, 0, 0.5, 1, 1)
+playAnimation(282574440, 0, 0.5, 0.4, 1)
+task.wait(0.8)
+
+-- Startup 2 Punches
+playAnimation(204062532, 0, 1, 0.5)
+playAnimation(429703734, 0.1, 0, 0.5)
+task.wait(0.5)
+playAnimation(188854226, 0.04, 0.6, 0.5)
+playAnimation(429703734, 0.3, 0, 0.5)
+task.wait(0.8)
+
+-- Barrage + Mixed Animations
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://126753849"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.3
+local playing = true
+
+-- Stop after 3 seconds
+task.delay(2, function()
+    playing = false
+    animationTrack:Stop(fadeTime)
+end)
+task.spawn(function()
+    while playing do
+        animationTrack:Play(fadeTime)
+        animationTrack.TimePosition = 0.2
+        animationTrack:AdjustSpeed(2)
+        task.wait(animationTrack.Length / 5) -- wait for the adjusted duration
+    end
+end)
+
+playAnimation(287325678, 0, 1, 2, 1.5)
+playAnimation(0, 0, 1, 2, 2)
+task.wait(2)
+
+-- Jump kick knee animation
+playAnimation(188632011, 0.18, 0, 0.3)
+playAnimation(181526230, 3, -0.1, 0.3, 0.8)
+playAnimation(287325678, 3, -0.1, 0.3, 0.5)
+playAnimation(248336294, 3, -0.1, 0.3, 0.3)
+
+----[leap-part-of-the-knee-kick-animation-]----
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local leapDistance = 0 -- Distance to leap in studs
+local leapHeight = 25
+local function leapForward()    
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = rootPart.CFrame.lookVector * leapDistance + Vector3.new(0, leapHeight, 0)
+    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000) -- Adjust as needed
+    bodyVelocity.P = 5000 -- Adjust the power of the force    
+    bodyVelocity.Parent = rootPart
+    game:GetService("Debris"):AddItem(bodyVelocity, 0.2)
+end
+leapForward()
+------------------------------[end of leap]------------------------------------
+
+-- [spin Lua + animation] --
+task.wait(0.5)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://215384594"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+task.delay(0.8, function()
+    animationTrack:Stop(fadeTime)
+end)
+
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+-- SETTINGS
+local spinSpeed = 30 
+local spinDuration = 0.8 
+local originalY = hrp.Orientation.Y
+local spinning = true
+local startTime = tick()
+local connection = RunService.RenderStepped:Connect(function(dt)
+    if spinning then
+        local currentRotation = hrp.Orientation
+        hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, math.rad(currentRotation.Y + spinSpeed), 0)
+    end
+end)
+
+task.delay(spinDuration, function()
+    spinning = false
+    connection:Disconnect()
+    local currentCFrame = hrp.CFrame
+    local currentPos = currentCFrame.Position
+    local goalCFrame = CFrame.new(currentPos) * CFrame.Angles(0, math.rad(originalY), 0)
+    local tween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { CFrame = goalCFrame })
+    tween:Play()
+end)
+
+-- spin animation.
+local function playTempAnimation(animId, fadeTime, duration)
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://" .. animId
+
+    local track = humanoid:LoadAnimation(animation)
+    track:Play(fadeTime)
+    track.TimePosition = 0
+    track:AdjustSpeed(1)
+
+    -- Wait for the animation to finish
+    task.wait(duration)
+
+    track:Stop(fadeTime)
+end
+
+playTempAnimation(248336294, 0.4, 0.4)
+playTempAnimation(248336294, 0.5, 0.4)
+task.wait(0.3)
+
+-- end kick
+local function playAnimation(animationId, fadeTime, timePosition, speed, stopDelay)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local animation = Instance.new("Animation")
+    animation.AnimationId = animationId
+    local animationTrack = humanoid:LoadAnimation(animation)
+    animationTrack:Play(fadeTime)
+    animationTrack.TimePosition = timePosition
+    animationTrack:AdjustSpeed(speed)
+    task.delay(stopDelay, function()
+        animationTrack:Stop(fadeTime)
+    end)
+end
+playAnimation("rbxassetid://181526230", 0.4, 0, 1, 0.5)
+playAnimation("rbxassetid://188632011", 0, 30, -0.5, 2)
+playAnimation("rbxassetid://35634514", 0.5, 1, 0, 0.2)
+playAnimation("rbxassetid://233077885", 0.5, 0, 1, 0.3)
+playAnimation("rbxassetid://96621537", 0.5, 3, 0.001, 0.5)
+playAnimation("rbxassetid://233036587", 0, 30, 0.5, 2)
+playAnimation("rbxassetid://157568994", 0.5, 0, 1, 0.5)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local leapDistance = -25
+local leapHeight = 10
+local function leapForward()
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = rootPart.CFrame.lookVector * leapDistance + Vector3.new(0, leapHeight, 0)
+    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+    bodyVelocity.P = 5000
+    bodyVelocity.Parent = rootPart
+    game:GetService("Debris"):AddItem(bodyVelocity, 0.2)
+end
+wait(0.4)
+-- leap forward call cuz im neo (yes i know it's obvious that this is the leap call but ik it's just an extra "--" since I'm cool)
+leapForward()
