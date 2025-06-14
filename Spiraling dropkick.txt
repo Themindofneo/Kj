@@ -1,72 +1,26 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
 
--- Set speed and jump power to 0
-humanoid.WalkSpeed = 0
-humanoid.JumpPower = 0
-wait(0.2)
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- Animation 1
-do
-    local animation = Instance.new("Animation")
-    animation.AnimationId = "rbxassetid://183294396"
-    local animationTrack = humanoid:LoadAnimation(animation)
-    local fadeTime = 0.5
-    animationTrack:Play(fadeTime)
-    animationTrack.TimePosition = 0
-    animationTrack:AdjustSpeed(1)
-    task.delay(0.5, function()
-        animationTrack:Stop(fadeTime)
-    end)
-end
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://97170520"
 
--- Animation 2
-do
-    local animation = Instance.new("Animation")
-    animation.AnimationId = "rbxassetid://180416148"
-    local animationTrack = humanoid:LoadAnimation(animation)
-    local fadeTime = 0.4
-    animationTrack:Play(fadeTime)
-    animationTrack.TimePosition = 0
-    animationTrack:AdjustSpeed(0)
-    task.delay(0.5, function()
-        animationTrack:Stop(fadeTime)
-    end)
-end
+local animationTrack = humanoid:LoadAnimation(animation)
 
--- Animation 3 (Lean forward movement)
-do
-    local hum = character.Humanoid
-    local animation = Instance.new("Animation")
-    animation.AnimationId = "rbxassetid://180436334"
-    local track = hum:LoadAnimation(animation)
-    track:Play(1, 5, 1)
-    track:AdjustSpeed(0.01)
+local fadeTime = 0.2
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
 
-    local hrp = character:WaitForChild("HumanoidRootPart")
-    local cfr = hrp.CFrame
-    local start = tick()
-    while tick() - start < 0.6 do
-        task.wait()
-        hrp.CFrame = cfr * CFrame.Angles(math.rad(-30), 0, 0) * CFrame.new(0, 0, -2.5)
-        hrp.Velocity = Vector3.zero
-        hrp.RotVelocity = Vector3.zero
-    end
-    track:Stop()
-end
-
--- Frontflip
-do
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
-local leapDistance =0 -- Distance to leap in studs
-local leapHeight = 30 -- Adjust this value to control how high the player jumps
+local leapDistance = -40 -- Distance to leap in studs
+local leapHeight = 45 -- Adjust this value to control how high the player jumps
 
 local function leapForward()
     -- Create a BodyVelocity to apply the leap
@@ -80,74 +34,55 @@ local function leapForward()
     game:GetService("Debris"):AddItem(bodyVelocity, 0.2)
 end
 leapForward()
-    local animation = Instance.new("Animation")
-    animation.AnimationId = "rbxassetid://235542946"
-    local animationTrack = humanoid:LoadAnimation(animation)
-    local fadeTime = 0.1
-    animationTrack.TimePosition = 0
-    animationTrack:AdjustSpeed(3)
-    animationTrack:Play(fadeTime)
-    task.delay(0.5, function()
-        animationTrack:Stop(fadeTime)
-    end)
+wait(0.5)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://235542946"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.1
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0
+animationTrack:AdjustSpeed(3)
+
+task.delay(0.2, function()
+    animationTrack:Stop(fadeTime)
+end)
+local c = game.Players.LocalPlayer.Character
+local hum = c.Humanoid
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://0" -- Replace with your animation ID
+local track = hum:LoadAnimation(animation)
+track:Play(1, 5, 1)
+track:AdjustSpeed(0.01)
+
+local hrp = c.HumanoidRootPart
+local cfr = hrp.CFrame
+
+local tiltAngle = -80 -- Positive is right, negative is left, 0 is normal
+
+local start = tick()
+while tick() - start < 0.2 do
+	task.wait()
+	hrp.CFrame = cfr * CFrame.Angles(0, 0, math.rad(-tiltAngle)) -- Apply tilt
+	hrp.Velocity = Vector3.zero
+	hrp.RotVelocity = Vector3.zero
 end
 
--- Backflip (with spin)
-do
-    local frontflipAnimation = Instance.new("Animation")
-    frontflipAnimation.AnimationId = "rbxassetid://0" -- Replace with valid ID
-    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    local animTrack = humanoid:LoadAnimation(frontflipAnimation)
-    animTrack:Play()
-    wait()
-    humanoid.Sit = true
-    for i = 1, 360 do
-        delay(i / 720, function()
-            humanoid.Sit = true
-            character.HumanoidRootPart.CFrame *= CFrame.Angles(-math.rad(1), 0, 0)
-        end)
-    end
-    wait(0.55)
-    humanoid.Sit = false
-end
+-- Return to normal tilt (0)
+hrp.CFrame = cfr -- Restore original orientation
 
--- Leap forward
-do
-    local rootPart = character:WaitForChild("HumanoidRootPart")
-    local leapDistance = 150
-    local leapHeight = 0
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.Velocity = rootPart.CFrame.lookVector * leapDistance + Vector3.new(0, leapHeight, 0)
-    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
-    bodyVelocity.P = 5000
-    bodyVelocity.Parent = rootPart
-    game:GetService("Debris"):AddItem(bodyVelocity, 0.2)
-end
-
--- Freeze Frame Animations
-local freezeAnimations = {
-    "327324663",
-    "60816255",
-    "56146409"
-}
-
-for _, animId in ipairs(freezeAnimations) do
-    local animation = Instance.new("Animation")
-    animation.AnimationId = "rbxassetid://" .. animId
-    local animationTrack = humanoid:LoadAnimation(animation)
-    local fadeTime = 0.2
-    animationTrack.TimePosition = 0
-    animationTrack:AdjustSpeed(0)
-    animationTrack:Play(fadeTime)
-    task.delay(0.4, function()
-        animationTrack:Stop(fadeTime)
-    end)
-end
+track:Stop()
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
-local leapDistance = 25 -- Distance to leap in studs
-local leapHeight = 205 -- Adjust this value to control how high the player jumps
+local leapDistance = 150 -- Distance to leap in studs
+local leapHeight = -95 -- Adjust this value to control how high the player jumps
 
 local function leapForward()
     -- Create a BodyVelocity to apply the leap
@@ -161,24 +96,63 @@ local function leapForward()
     game:GetService("Debris"):AddItem(bodyVelocity, 0.2)
 end
 leapForward()
-Wait(0.1)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://327324663"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.2
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(0.2, function()
+    animationTrack:Stop(fadeTime)
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://287325678"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.1
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+Wait(0.25)
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
 
-local function restoreDefaults(humanoid)
-	humanoid.WalkSpeed = 10
-	humanoid.JumpPower = 50
+local function teleportToNearbyPlayer()
+	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local hrp = character:WaitForChild("HumanoidRootPart")
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local targetHRP = player.Character.HumanoidRootPart
+			local distance = (hrp.Position - targetHRP.Position).Magnitude
+
+			if distance <= 25 then
+				-- Teleport the local player to the nearby player
+				hrp.CFrame = targetHRP.CFrame + Vector3.new(0, 3, 0) -- offset upward to avoid overlapping
+				break
+			end
+		end
+	end
 end
 
-local function onCharacterAdded(character)
-	local humanoid = character:WaitForChild("Humanoid")
-	restoreDefaults(humanoid)
-end
-
--- If the character already exists
-if player.Character then
-	onCharacterAdded(player.Character)
-end
-
--- Restore on respawn
-player.CharacterAdded:Connect(onCharacterAdded)
+-- Run it once after character is loaded
+teleportToNearbyPlayer()
