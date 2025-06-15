@@ -5,16 +5,16 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
 local animation = Instance.new("Animation")
-animation.AnimationId = "rbxassetid://235542946"
+animation.AnimationId = "rbxassetid://151293057"
 
 local animationTrack = humanoid:LoadAnimation(animation)
 
 local fadeTime = 0.2
 animationTrack:Play(fadeTime)
 animationTrack.TimePosition = 0
-animationTrack:AdjustSpeed(2)
+animationTrack:AdjustSpeed(1)
 
-task.delay(0.8, function()
+task.delay(0.4, function()
     animationTrack:Stop(fadeTime)
 end)
 
@@ -32,10 +32,10 @@ local hrp = c:WaitForChild("HumanoidRootPart")
 local cfr = hrp.CFrame
 
 local forwardTiltAngle = -35
-local sideTiltAngle = -40 -- Positive is right, negative is left
+local sideTiltAngle = -30 -- Positive is right, negative is left
 
 local start = tick()
-while tick() - start < 0.6 do
+while tick() - start < 0.3 do
 	task.wait()
 	local combinedTilt = CFrame.Angles(math.rad(forwardTiltAngle), 0, math.rad(-sideTiltAngle))
 	hrp.CFrame = cfr * combinedTilt
