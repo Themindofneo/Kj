@@ -1,0 +1,400 @@
+
+
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://113246235"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.3
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+task.wait(0.5)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://74863286"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.3
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://287325678"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.4
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local head = character:WaitForChild("Head")
+
+-- CONFIG
+local blueColor = Color3.new(0, 0.5, 1)
+local redColor = Color3.new(1, 0, 0)
+local purpleColor = Color3.fromRGB(128, 0, 255)
+
+local spiralRadius = 50
+local spiralHeight = 100
+local spiralDuration = 3
+local spiralSpins = 4
+
+local FLING_FORCE = 400000
+local FLING_VELOCITY = 250
+
+-- Create glowing ball function
+local function createBall(color, size, position)
+	local part = Instance.new("Part")
+	part.Shape = Enum.PartType.Ball
+	part.Size = size
+	part.Color = color
+	part.Material = Enum.Material.Neon
+	part.Anchored = true
+	part.CanCollide = false
+	part.Transparency = 1
+	part.Position = position
+	part.Name = "EnergyBall"
+	part.Parent = workspace
+	TweenService:Create(part, TweenInfo.new(0.4), {Transparency = 0}):Play()
+	return part
+end
+
+-- Spiral blue ball
+local blueBall = createBall(blueColor, Vector3.new(25, 25, 25), head.Position + Vector3.new(0, 5, 0))
+
+task.delay(0.5, function()
+	local startTime = tick()
+	local connection
+
+	connection = RunService.RenderStepped:Connect(function()
+		local elapsed = tick() - startTime
+		if elapsed >= spiralDuration then
+			blueBall.Position = head.Position + Vector3.new(0, spiralHeight + 5, 0)
+			connection:Disconnect()
+
+			local redBall = createBall(redColor, Vector3.new(9, 9, 9), head.Position + Vector3.new(0, 5, 0))
+			local goalPos = blueBall.Position
+
+			local tween = TweenService:Create(redBall, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Position = goalPos
+			})
+			tween:Play()
+
+			tween.Completed:Connect(function()
+				blueBall:Destroy()
+				redBall:Destroy()
+
+				local purpleBall = createBall(purpleColor, Vector3.new(50, 50, 50), goalPos)
+
+				-- First grow
+				task.delay(1, function()
+					local firstGrowth = TweenService:Create(purpleBall, TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+						Size = purpleBall.Size * 2
+					})
+					firstGrowth:Play()
+
+					-- Final phase
+					task.delay(3 + 2, function()
+						purpleBall.CanTouch = true
+
+						local finalTween = TweenService:Create(purpleBall, TweenInfo.new(0.5), {
+							Size = purpleBall.Size * 3,
+							Transparency = 1
+						})
+						finalTween:Play()
+
+						local touchedConn
+						touchedConn = purpleBall.Touched:Connect(function(hit)
+							-- Ignore player's own character
+							if hit:IsDescendantOf(character) then return end
+
+							-- FLING
+							if hit:IsA("BasePart") and not hit.Anchored then
+								local offset = hit.Position - purpleBall.Position
+								if offset.Magnitude > 0 then
+									local bv = Instance.new("BodyVelocity")
+									bv.Velocity = offset.Unit * FLING_VELOCITY
+									bv.MaxForce = Vector3.new(FLING_FORCE, FLING_FORCE, FLING_FORCE)
+									bv.P = 400000
+									bv.Parent = hit
+									Debris:AddItem(bv, 0.1)
+								end
+							end
+
+							-- KILL if it has a humanoid
+							local model = hit:FindFirstAncestorOfClass("Model")
+							if model then
+								local hum = model:FindFirstChildWhichIsA("Humanoid")
+								if hum and hum.Health > 0 then
+									hum:TakeDamage(999999)
+								end
+							end
+						end)
+
+						finalTween.Completed:Connect(function()
+							if touchedConn then touchedConn:Disconnect() end
+							purpleBall:Destroy()
+						end)
+					end)
+				end)
+			end)
+
+			return
+		end
+
+		local t = elapsed / spiralDuration
+		local currentRadius = spiralRadius * (1 - t)
+		local angle = t * math.pi * 2 * spiralSpins
+		local x = math.cos(angle) * currentRadius
+		local z = math.sin(angle) * currentRadius
+		local y = t * spiralHeight
+
+		blueBall.Position = head.Position + Vector3.new(x, y + 5, z)
+	end)
+end)
+
+
+
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://73137669"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(1)
+
+task.delay(5, function()
+    animationTrack:Stop(fadeTime)
+end)
+Wait(5)
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- SETTINGS
+local leapDistance = -1 -- Forward push
+local leapHeight = 100 -- Vertical boost
+local flipDuration = 0.54 -- Duration before Sit is disabled
+
+-- ANIMATION
+local frontflipAnimation = Instance.new("Animation")
+frontflipAnimation.AnimationId = "rbxassetid://0" -- Replace with actual flip animation ID
+
+local function leapWithFrontflip()
+	-- Play frontflip animation
+	local animTrack = humanoid:LoadAnimation(frontflipAnimation)
+	animTrack:Play()
+
+	-- Sit to allow rotation while mid-air
+	humanoid.Sit = true
+
+	-- Apply leap velocity
+	local bodyVelocity = Instance.new("BodyVelocity")
+	bodyVelocity.Velocity = rootPart.CFrame.lookVector * leapDistance + Vector3.new(0, leapHeight, 0)
+	bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+	bodyVelocity.P = 5000
+	bodyVelocity.Parent = rootPart
+	Debris:AddItem(bodyVelocity, 0.2)
+
+	-- Simulate flipping motion manually
+	for i = 1, 360 do
+		delay(i / 720, function()
+			if humanoid.Sit then
+				rootPart.CFrame = rootPart.CFrame * CFrame.Angles(-math.rad(-1), 0, 0)
+			end
+		end)
+	end
+
+	-- After delay, unsit the humanoid to restore control
+	task.delay(flipDuration, function()
+		humanoid.Sit = false
+	end)
+end
+
+leapWithFrontflip()
+Wait(0.55)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://93648331"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.2
+animationTrack:AdjustSpeed(0)
+
+task.delay(3, function()
+    animationTrack:Stop(fadeTime)
+end)
+
+
+local c = game.Players.LocalPlayer.Character
+local hum = c.Humanoid
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://180436334"
+local track = hum:LoadAnimation(animation)
+track:Play(1, 5, 1)
+track:AdjustSpeed(0.01)
+
+local hrp = c.HumanoidRootPart
+local cfr = hrp.CFrame
+
+local start = tick()
+while tick() - start < 3 do
+    task.wait()
+    hrp.CFrame = cfr * CFrame.Angles(math.rad(0), 0, 0) * CFrame.new(0, 0, 0)
+    hrp.Velocity = Vector3.zero
+    hrp.RotVelocity = Vector3.zero
+end
+
+track:Stop()
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://93648331"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 1
+animationTrack:AdjustSpeed(0)
+
+task.delay(3, function()
+    animationTrack:Stop(fadeTime)
+end)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local fadeTime, tweenTime = 0.5, 0.5
+local imageId = "rbxassetid://133329932870887"
+
+local function createBillboard(offset, text)
+	local character = player.Character or player.CharacterAdded:Wait()
+	local hrp = character:WaitForChild("HumanoidRootPart")
+
+	local bb = Instance.new("BillboardGui")
+	bb.Adornee = hrp
+	bb.Size = UDim2.fromScale(5, 5)
+	bb.StudsOffset = offset
+	bb.AlwaysOnTop = true
+	bb.Parent = character
+
+	local img = Instance.new("ImageLabel")
+	img.Size = UDim2.fromScale(0.77, 0.77)
+	img.Position = UDim2.fromScale(0.115, 0.115)
+	img.Image = imageId
+	img.BackgroundTransparency = 1
+	img.Parent = bb
+
+	local txt = Instance.new("TextLabel")
+	txt.Size = UDim2.fromScale(0.59, 0.59)
+	txt.Position = UDim2.fromScale(0.205, 0.205)
+	txt.BackgroundTransparency = 1
+	txt.TextScaled = true
+	txt.Font = Enum.Font.SpecialElite -- MANGA-LIKE FONT
+	txt.TextColor3 = Color3.new()
+	txt.TextStrokeTransparency = 1
+	txt.Text = text
+	txt.Parent = img
+
+	task.spawn(function()
+		task.wait(3)
+		TweenService:Create(bb, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad), {
+			StudsOffset = bb.StudsOffset + Vector3.new((offset.X > 0 and 1 or -1) * 16, 0, 0)
+		}):Play()
+
+		for i = 0, 1, 1 / (fadeTime * 60) do
+			img.ImageTransparency = i
+			txt.TextTransparency = i
+			task.wait(0.5 / 60)
+		end
+
+		bb:Destroy()
+	end)
+end
+
+local function triggerBillboards()
+	createBillboard(Vector3.new(-5, 0, 0), "... How about we crank this up a notch.       Imaginary technique...")
+	createBillboard(Vector3.new(5, 0, 0), "... Maximum output hollow..                    PURPLE!!")
+end
+
+if player.Character then
+	triggerBillboards()
+else
+	player.CharacterAdded:Once(triggerBillboards)
+end
+local c = game.Players.LocalPlayer.Character
+local hum = c.Humanoid
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://0"
+local track = hum:LoadAnimation(animation)
+track:Play(1, 5, 1)
+track:AdjustSpeed(0.01)
+
+local hrp = c.HumanoidRootPart
+local cfr = hrp.CFrame
+
+local start = tick()
+while tick() - start < 3 do
+    task.wait()
+    hrp.CFrame = cfr * CFrame.Angles(math.rad(0), 0, 0) * CFrame.new(0, 0, 0)
+    hrp.Velocity = Vector3.zero
+    hrp.RotVelocity = Vector3.zero
+end
+
+track:Stop()
