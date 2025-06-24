@@ -1,52 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
 
--- Settings
-local GLOW_COLOR = Color3.new(1, 1, 1)
-local GLOW_INTENSITY = 1
-local GLOW_RANGE = 10
-local DURATION = 9.5
-
--- Utility: Check if part is unanchored or belongs to a player/NPC
-local function shouldGlow(obj)
-	if obj:IsA("Model") then
-		local humanoid = obj:FindFirstChildOfClass("Humanoid")
-		return humanoid and obj ~= LocalPlayer.Character
-	elseif obj:IsA("BasePart") then
-		return not obj.Anchored
-	end
-	return false
-end
-
--- Apply highlight
-local highlights = {}
-
-for _, obj in ipairs(Workspace:GetDescendants()) do
-	if shouldGlow(obj) then
-		local target = obj:IsA("Model") and obj or obj.Parent
-		if target and not highlights[target] then
-			local hl = Instance.new("Highlight")
-			hl.Adornee = target
-			hl.FillTransparency = 1
-			hl.OutlineColor = GLOW_COLOR
-			hl.OutlineTransparency = 0
-			hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-			hl.Parent = target
-			highlights[target] = hl
-		end
-	end
-end
-
--- Cleanup after 9.5 seconds
-task.delay(DURATION, function()
-	for _, hl in pairs(highlights) do
-		if hl and hl.Parent then
-			hl:Destroy()
-		end
-	end
-end)
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
