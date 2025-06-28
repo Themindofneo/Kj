@@ -1,0 +1,815 @@
+
+function GetGitSoundID(GithubSnd, SoundName)
+	SoundName = tostring(SoundName)
+	local url = GithubSnd
+	local FileName = SoundName
+	writefile("customObject_Sound_"..FileName..".mp3", game:HttpGet(url))
+	return (getcustomasset or getsynasset)("customObject_Sound_"..FileName..".mp3")
+end
+
+function sfx(id, parent, duration, timePosition, speed)
+	local sound = Instance.new("Sound")
+	sound.SoundId = id
+	sound.Parent = parent
+	sound.Volume = 14
+	sound.TimePosition = timePosition or 0 -- Set time position (default 0)
+	sound.PlaybackSpeed = speed or 1      -- Set playback speed (default 1)
+	sound:Play()
+	game.Debris:AddItem(sound, duration or 40)
+	return sound
+end
+
+function getsfxid(id)
+	local hi = nil
+	if id == "clang" then
+		hi = "rbxassetid://495135507"
+	elseif id == "Stoic" then
+		hi = GetGitSoundID("https://github.com/Themindofneo/Kj/raw/refs/heads/main/stoic-bomb-audio-made-with-Voicemod.mp3", "Stoic")
+	elseif id == "Stoic" then
+		hi = GetGitSoundID("https://github.com/Themindofneo/Kj/raw/refs/heads/main/theme-audio.mp3", "Theme")
+	end
+	return tostring(hi)
+end
+
+-- Example usage:
+sfx(getsfxid("Stoic"), workspace, 100, 7.8, 1) -- Plays from 5 seconds into the audio at 1.2x speed
+
+
+
+
+
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Auto update character references on respawn
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoid = character:WaitForChild("Humanoid")
+	rootPart = character:WaitForChild("HumanoidRootPart")
+end)
+
+local active_move = nil
+
+local function stoic_bomb()
+	if active_move then return end
+	active_move = "Stoic Bomb"
+
+	local freezeVelo = true
+	local fluteTrack, holdTrack
+
+	task.spawn(function()
+		task.wait(0.2)
+		local fluteAnim = Instance.new("Animation")
+		fluteAnim.AnimationId = "rbxassetid://52154760"
+
+		local holdAnim = Instance.new("Animation")
+		holdAnim.AnimationId = "rbxassetid://48138189"
+
+		fluteTrack = humanoid:LoadAnimation(fluteAnim)
+		holdTrack = humanoid:LoadAnimation(holdAnim)
+
+		fluteTrack:Play()
+		holdTrack:Play()
+
+		task.wait(1)
+
+		fluteTrack:AdjustSpeed(0)
+		holdTrack:AdjustSpeed(0)
+	end)
+
+	task.spawn(function()
+		task.wait(0.2)
+		local startCF = rootPart.CFrame
+
+		local tween1 = TweenService:Create(rootPart, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {CFrame = startCF + Vector3.new(0, 140, 0)})
+		tween1:Play()
+		tween1.Completed:Wait()
+
+		local tween2 = TweenService:Create(rootPart, TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = startCF + Vector3.new(0, 150, 0)})
+		tween2:Play()
+		tween2.Completed:Wait()
+
+		local tween3 = TweenService:Create(rootPart, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = startCF + Vector3.new(0, 8, 0)})
+		tween3:Play()
+		tween3.Completed:Wait()
+
+		local tween4 = TweenService:Create(rootPart, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = startCF + Vector3.new(0, 5, 0)})
+		tween4:Play()
+		tween4.Completed:Wait()
+
+		task.wait(0.75)
+
+		if fluteTrack then fluteTrack:Stop() end
+		if holdTrack then holdTrack:Stop() end
+
+		freezeVelo = false
+	end)
+
+	task.spawn(function()
+		local tween1 = TweenService:Create(rootPart, TweenInfo.new(0.18, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {
+			CFrame = rootPart.CFrame * CFrame.Angles(math.rad(-25), 0, 0)
+		})
+		tween1:Play()
+		tween1.Completed:Wait()
+
+		task.wait(0.21)
+		rootPart.CFrame = rootPart.CFrame * CFrame.Angles(math.rad(160), 0, 0)
+
+		local tween2 = TweenService:Create(rootPart, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+			CFrame = rootPart.CFrame * CFrame.Angles(math.rad(340), 0, 0)
+		})
+		tween2:Play()
+		tween2.Completed:Wait()
+	end)
+
+	task.spawn(function()
+		for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+			track:Stop()
+		end
+
+		local conn
+		conn = RunService.RenderStepped:Connect(function()
+			if not freezeVelo then
+				conn:Disconnect()
+				return
+			end
+			rootPart.Velocity = Vector3.zero
+		end)
+
+		local originalSpeed = humanoid.WalkSpeed
+		local originalJump = humanoid.JumpPower
+		local originalRotate = humanoid.AutoRotate
+
+		humanoid.WalkSpeed = 0
+		humanoid.JumpPower = 0
+		humanoid.AutoRotate = false
+
+		task.wait(3)
+
+		humanoid.WalkSpeed = originalSpeed
+		humanoid.JumpPower = originalJump
+		humanoid.AutoRotate = originalRotate
+		humanoid.HipHeight = 0
+
+		active_move = nil
+	end)
+end
+
+-- 🔥 Execute instantly without blocking anything below
+task.spawn(stoic_bomb)
+
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://94853940"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(2.8, function()
+    animationTrack:Stop(fadeTime)
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://21633130"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(2.8, function()
+    animationTrack:Stop(fadeTime)
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://31319431"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(2.8, function()
+    animationTrack:Stop(fadeTime)
+end)
+Wait(2.8)
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local root = character:WaitForChild("HumanoidRootPart")
+
+local FLING_RADIUS = 35
+local PUSH_DISTANCE = 35
+
+-- Function to check if a part belongs to a player
+local function isPlayerPart(part)
+	local plr = Players:GetPlayerFromCharacter(part:FindFirstAncestorOfClass("Model"))
+	return plr ~= nil
+end
+
+-- Fling and damage
+for _, v in ipairs(workspace:GetDescendants()) do
+	if v:IsA("BasePart") and not v.Anchored then
+		local parentModel = v:FindFirstAncestorOfClass("Model")
+		local humanoid = parentModel and parentModel:FindFirstChildOfClass("Humanoid")
+		local isNPC = humanoid and not Players:GetPlayerFromCharacter(parentModel)
+		local isNear = (v.Position - root.Position).Magnitude <= FLING_RADIUS
+
+		if isNear and (not isPlayerPart(v)) and (isNPC or not parentModel) then
+			local direction = (v.Position - root.Position).Unit
+			local bodyVelocity = Instance.new("BodyVelocity")
+			bodyVelocity.Velocity = direction * (PUSH_DISTANCE / 0.1)
+			bodyVelocity.MaxForce = Vector3.new(1, 1, 1) * 1e5
+			bodyVelocity.P = 1e4
+			bodyVelocity.Parent = v
+			Debris:AddItem(bodyVelocity, 0.1)
+
+			if isNPC then
+				task.delay(0.5, function()
+					if humanoid and humanoid.Health > 0 then
+						humanoid.Health = 0
+					end
+				end)
+			end
+		end
+	end
+end
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(255, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(150, 150, 150)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.3, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+
+wait(0.2)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(0, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(100, 100, 100)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(255, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(50, 50, 50)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(0, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(100, 100, 100)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(255, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(50, 50, 50)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(0, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(50, 50, 50)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(0, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(10, 160, 10)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(255, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(3, 3, 3)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.5, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+wait(0.1)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createExpandingBall()
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(1, 1, 1)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.ForceField
+	ball.Color = Color3.fromRGB(255, 0, 0)
+	ball.Transparency = 0
+	ball.Parent = workspace
+
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	ball.Position = rootPart.Position - Vector3.new(0, 1, 0)
+
+	-- Tween to expand size
+	local sizeTween = TweenService:Create(ball, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(200, 200, 200)
+	})
+	sizeTween:Play()
+
+	-- Wait 0.5s then fade away
+	task.delay(0.6, function()
+		local fadeTween = TweenService:Create(ball, TweenInfo.new(0.5), {
+			Transparency = 1
+		})
+		fadeTween:Play()
+		fadeTween.Completed:Wait()
+		ball:Destroy()
+	end)
+end
+
+createExpandingBall()
+wait(0.1)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- CAMERA SHAKE FUNCTION
+task.spawn(function()
+	local Intensity = 0.4
+	local ShakeLength = 2
+	local FadeLength = 0.5
+
+	local rn = Random.new()
+	local int = Instance.new("NumberValue")
+	int.Value = Intensity
+
+	local b
+	b = RunService.Heartbeat:Connect(function()
+		local camOffset = Vector3.new(
+			rn:NextNumber(-int.Value, int.Value),
+			rn:NextNumber(-int.Value, int.Value),
+			rn:NextNumber(-int.Value, int.Value)
+		)
+		if character and character:FindFirstChild("Humanoid") then
+			character.Humanoid.CameraOffset = camOffset
+		end
+	end)
+
+	task.wait(ShakeLength)
+
+	local fadeTween = TweenService:Create(
+		int,
+		TweenInfo.new(FadeLength, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Value = 0 }
+	)
+	fadeTween:Play()
+	fadeTween.Completed:Wait()
+
+	b:Disconnect()
+end)
+
+-- BLOCK SPAWN FUNCTION
+task.spawn(function()
+	local function spawnAndDestroyCircleOfBlocks()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		local position = humanoidRootPart.Position
+		local ray = Ray.new(position + Vector3.new(0, 5, 0), Vector3.new(0, -10, 0))
+		local hit, hitPosition = workspace:FindPartOnRay(ray, character)
+
+		if hit then
+			local blockCount = 40
+			local radius = 40
+			local angleStep = 360 / blockCount
+			local blocks = {}
+
+			for i = 0, blockCount - 1 do
+				local angle = math.rad(i * angleStep)
+				local xOffset = radius * math.cos(angle)
+				local zOffset = radius * math.sin(angle)
+				local spreadOffset = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1))
+				local blockPosition = hitPosition + Vector3.new(xOffset, 0.5, zOffset) + spreadOffset
+
+				local block = Instance.new("Part")
+				block.Size = Vector3.new(12, 3, 12)
+				block.Position = blockPosition
+				block.Anchored = true
+				block.Color = hit.Color
+				block.Parent = workspace
+
+				local direction = humanoidRootPart.Position - block.Position
+				block.CFrame = CFrame.new(blockPosition, blockPosition + direction)
+
+				table.insert(blocks, block)
+			end
+
+			task.wait(0.5)
+
+			for _, block in ipairs(blocks) do
+				local targetPosition = block.Position - Vector3.new(0, 5, 0)
+				local tween = TweenService:Create(
+					block,
+					TweenInfo.new(1, Enum.EasingStyle.Linear),
+					{ Position = targetPosition }
+				)
+				tween:Play()
+				tween.Completed:Connect(function()
+					Debris:AddItem(block, 0)
+				end)
+			end
+		end
+	end
+
+	spawnAndDestroyCircleOfBlocks()
+end)
+wait(0.8)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- CAMERA SHAKE FUNCTION
+task.spawn(function()
+	local Intensity = 0.4
+	local ShakeLength = 2
+	local FadeLength = 0.5
+
+	local rn = Random.new()
+	local int = Instance.new("NumberValue")
+	int.Value = Intensity
+
+	local b
+	b = RunService.Heartbeat:Connect(function()
+		local camOffset = Vector3.new(
+			rn:NextNumber(-int.Value, int.Value),
+			rn:NextNumber(-int.Value, int.Value),
+			rn:NextNumber(-int.Value, int.Value)
+		)
+		if character and character:FindFirstChild("Humanoid") then
+			character.Humanoid.CameraOffset = camOffset
+		end
+	end)
+
+	task.wait(ShakeLength)
+
+	local fadeTween = TweenService:Create(
+		int,
+		TweenInfo.new(FadeLength, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Value = 0 }
+	)
+	fadeTween:Play()
+	fadeTween.Completed:Wait()
+
+	b:Disconnect()
+end)
+
+-- BLOCK SPAWN FUNCTION
+task.spawn(function()
+	local function spawnAndDestroyCircleOfBlocks()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		local position = humanoidRootPart.Position
+		local ray = Ray.new(position + Vector3.new(0, 5, 0), Vector3.new(0, -10, 0))
+		local hit, hitPosition = workspace:FindPartOnRay(ray, character)
+
+		if hit then
+			local blockCount = 14
+			local radius = 30
+			local angleStep = 360 / blockCount
+			local blocks = {}
+
+			for i = 0, blockCount - 1 do
+				local angle = math.rad(i * angleStep)
+				local xOffset = radius * math.cos(angle)
+				local zOffset = radius * math.sin(angle)
+				local spreadOffset = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1))
+				local blockPosition = hitPosition + Vector3.new(xOffset, 0.5, zOffset) + spreadOffset
+
+				local block = Instance.new("Part")
+				block.Size = Vector3.new(12, 3, 12)
+				block.Position = blockPosition
+				block.Anchored = true
+				block.Color = hit.Color
+				block.Parent = workspace
+
+				local direction = humanoidRootPart.Position - block.Position
+				block.CFrame = CFrame.new(blockPosition, blockPosition + direction)
+
+				table.insert(blocks, block)
+			end
+
+			task.wait(0.5)
+
+			for _, block in ipairs(blocks) do
+				local targetPosition = block.Position - Vector3.new(0, 5, 0)
+				local tween = TweenService:Create(
+					block,
+					TweenInfo.new(1, Enum.EasingStyle.Linear),
+					{ Position = targetPosition }
+				)
+				tween:Play()
+				tween.Completed:Connect(function()
+					Debris:AddItem(block, 0)
+				end)
+			end
+		end
+	end
+
+	spawnAndDestroyCircleOfBlocks()
+end)
