@@ -1,0 +1,188 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local function playAnim(id, fadeTime, speed, timePos, stopDelay)
+	local anim = Instance.new("Animation")
+	anim.AnimationId = "rbxassetid://" .. id
+	local track = humanoid:LoadAnimation(anim)
+	track:Play(fadeTime)
+	track.TimePosition = timePos or 0
+	track:AdjustSpeed(speed or 1)
+	task.delay(stopDelay, function()
+		track:Stop(fadeTime)
+	end)
+end
+
+playAnim(243662996, 0.2, 1.3, 0, 1)
+playAnim(243641880, 0.5, 1, 0.5, 1)
+playAnim(94097701,  0.5, 0.9, 0, 0.5)
+playAnim(218504594, 0.5, 1, 0, 1)
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+
+local assetId = "rbxassetid://113474906467923" -- test model
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Check if a part belongs to a player
+local function isPlayer(part)
+	local model = part:FindFirstAncestorOfClass("Model")
+	if model then
+		return Players:GetPlayerFromCharacter(model) ~= nil
+	end
+	return false
+end
+
+-- Fling part and kill NPCs
+local function flingPart(part)
+	if not part:IsA("BasePart") then return end
+	if part.Anchored then return end
+	if part:GetAttribute("HasBeenFlung") then return end
+	if part:FindFirstAncestorOfClass("Model") == character then return end
+	if isPlayer(part) then return end
+
+	part:SetAttribute("HasBeenFlung", true)
+
+	-- Super strong upward fling
+	local bodyVel = Instance.new("BodyVelocity")
+	bodyVel.Velocity = Vector3.new(0, 100, 0)
+	bodyVel.MaxForce = Vector3.new(0, math.huge, 0)
+	bodyVel.P = 50000
+	bodyVel.Name = "SuperFling"
+	bodyVel.Parent = part
+	Debris:AddItem(bodyVel, 0.15)
+
+	-- Kill humanoid if exists
+	local model = part:FindFirstAncestorOfClass("Model")
+	if model then
+		local humanoid = model:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			humanoid.Health = 0
+		end
+	end
+end
+
+-- Function to spawn a model
+local function spawnModel(settings)
+	local objects = game:GetObjects(assetId)
+	if #objects == 0 then return end
+
+	local model = objects[1]
+	model.Parent = workspace
+
+	if not model:IsA("Model") then return end
+
+	-- Set PrimaryPart
+	if not model.PrimaryPart then
+		local primary = model:FindFirstChildWhichIsA("BasePart")
+		if primary then
+			model.PrimaryPart = primary
+		else
+			return
+		end
+	end
+
+	-- Customize model parts
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = false
+			part.Massless = true
+			part.Color = Color3.new(0, 0, 0) -- black
+			part.Size *= settings.Scale
+
+			-- Connect fling logic
+			part.Touched:Connect(function(hit)
+				coroutine.wrap(function() flingPart(hit) end)()
+			end)
+
+		elseif part:IsA("Decal") then
+			part:Destroy()
+		end
+	end
+
+	local rootCFrame = humRootPart.CFrame
+	local lookVector = rootCFrame.LookVector
+	local offset = Vector3.new(
+		settings.MoveRight - settings.MoveLeft,
+		settings.MoveUp - settings.MoveDown,
+		settings.MoveForward - settings.MoveBackward
+	)
+
+	local spawnCFrame = rootCFrame + rootCFrame:VectorToWorldSpace(offset)
+	local facingRotation = CFrame.new(Vector3.zero, lookVector)
+
+	local basePos = spawnCFrame.Position
+	local belowPos = basePos - Vector3.new(0, settings.RiseHeight, 0)
+	local finalCFrame = CFrame.new(basePos) * facingRotation
+
+	model:SetPrimaryPartCFrame(CFrame.new(belowPos) * facingRotation)
+
+	-- Rise animation
+	local riseTween = TweenService:Create(model.PrimaryPart, TweenInfo.new(settings.RiseTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		CFrame = finalCFrame
+	})
+	riseTween:Play()
+
+	-- Sink and destroy
+	task.delay(settings.DestroyDelay - settings.SinkTime, function()
+		if model and model.PrimaryPart then
+			local sinkTween = TweenService:Create(model.PrimaryPart, TweenInfo.new(settings.SinkTime, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+				CFrame = CFrame.new(basePos - Vector3.new(0, settings.RiseHeight, 0)) * facingRotation
+			})
+			sinkTween:Play()
+			sinkTween.Completed:Wait()
+			model:Destroy()
+		end
+	end)
+end
+
+-- Spawn 3 different models
+spawnModel({
+	MoveRight = 3,
+	MoveLeft = 0,
+	MoveUp = 0,
+	MoveDown = 0,
+	MoveForward = 0,
+	MoveBackward = 0,
+	DestroyDelay = 5,
+	RiseHeight = 10,
+	RiseTime = 0.5,
+	SinkTime = 0.5,
+	Scale = 12
+})
+
+task.wait(0.2)
+
+spawnModel({
+	MoveRight = 3,
+	MoveLeft = 0,
+	MoveUp = 0,
+	MoveDown = 0,
+	MoveForward = 0,
+	MoveBackward = 40,
+	DestroyDelay = 5,
+	RiseHeight = 10,
+	RiseTime = 0.5,
+	SinkTime = 0.5,
+	Scale = 10
+})
+
+task.wait(0.2)
+
+spawnModel({
+	MoveRight = 3,
+	MoveLeft = 0,
+	MoveUp = 0,
+	MoveDown = 0,
+	MoveForward = 0,
+	MoveBackward = 80,
+	DestroyDelay = 5,
+	RiseHeight = 30,
+	RiseTime = 0.5,
+	SinkTime = 0.5,
+	Scale = 30
+})
