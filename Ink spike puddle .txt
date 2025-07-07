@@ -1,0 +1,585 @@
+function GetGitSoundID(GithubSnd, SoundName)
+    SoundName = tostring(SoundName)
+    local url = GithubSnd
+    local FileName = SoundName  -- Use local scope to avoid global pollution
+    -- Download the file from GitHub and save it
+    writefile("customObject_Sound_" .. FileName .. ".mp3", game:HttpGet(url))
+    -- Return the local path to the custom sound asset
+    if getcustomasset then
+        return getcustomasset("customObject_Sound_" .. FileName .. ".mp3")
+    elseif getsynasset then
+        return getsynasset("customObject_Sound_" .. FileName .. ".mp3")
+    else
+        warn("getcustomasset/getsynasset not available")
+        return nil
+    end
+end
+function sfx(id, p, d)
+    if not id then
+        warn("Invalid Sound ID")
+        return
+    end
+    local SlashSound = Instance.new("Sound")
+    SlashSound.SoundId = id  -- Set the SoundId to the asset URL
+    SlashSound.Parent = p  -- Set the parent part to play the sound from
+    SlashSound.Volume = 3  -- Set the volume level
+    if d then
+        game.Debris:AddItem(SlashSound, 1.7)  -- Clean up the sound after 15 seconds
+    end
+    SlashSound:Play()  -- Play the sound
+    return SlashSound
+end
+function getsfxid(id)
+    local hi = nil
+    if id == "clang" then
+        hi = "rbxassetid://495135507"  -- Example sound ID
+    elseif id == "Slap" then  -- Fixed syntax error
+        -- Get the GitHub sound URL and use the GetGitSoundID function
+        hi = GetGitSoundID("https://github.com/Themindofneo/neo-s-slashing-demise/raw/refs/heads/main/kj-slap-made-with-Voicemod.mp3")
+    end
+    return hi and tostring(hi) or nil  -- Ensure nil is returned if no match
+end
+-- Play the sound
+sfx(getsfxid("Slap"), workspace, true)  -- Fixed extra double quote
+------
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://215384594"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 1
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 10
+animationTrack:AdjustSpeed(-20)
+task.delay(0.09, function()
+    animationTrack:Stop(fadeTime)
+end)
+---shake
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://96619712"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 3
+animationTrack:AdjustSpeed(-2)
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://200851211"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 1
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 3
+animationTrack:AdjustSpeed(-0.1)
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+wait(0.4)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://184574340"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 1.2
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 1.2
+animationTrack:AdjustSpeed(1)
+task.delay(10, function()
+    animationTrack:Stop(fadeTime)
+end)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://287325678"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 1.2
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 3
+animationTrack:AdjustSpeed(-1)
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+wait(0.3)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://184721389"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 1
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 3
+animationTrack:AdjustSpeed(-0.1)
+task.delay(0.5, function()
+    animationTrack:Stop(fadeTime)
+end)
+Wait(0.4)
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Settings
+local assetId = "rbxassetid://113474906467923" -- model asset
+local imageId = "rbxassetid://87183461906295"  -- image texture
+
+local imageDuration = 5
+local fadeTime = 2
+local resetDelay = 3
+local maxSize = 100
+local maxSlowDistance = 50
+local freezeDistance = 5
+
+-- Ink effect function
+local function applyInkEffect(targetHRP)
+	if targetHRP:FindFirstChild("InkEffect") then return end
+
+	local particle = Instance.new("ParticleEmitter")
+	particle.Name = "InkEffect"
+	particle.Texture = "rbxassetid://243660364"
+	particle.Rate = 20
+	particle.Lifetime = NumberRange.new(1.5, 2.5)
+	particle.Speed = NumberRange.new(0.5, 1.5)
+	particle.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1.5), NumberSequenceKeypoint.new(1, 0.5)})
+	particle.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)})
+	particle.Color = ColorSequence.new(Color3.new(0, 0, 0))
+	particle.Rotation = NumberRange.new(0, 360)
+	particle.RotSpeed = NumberRange.new(-50, 50)
+	particle.SpreadAngle = Vector2.new(180, 180)
+	particle.Parent = targetHRP
+end
+
+-- Death effect
+local function turnBlackAndDie(model)
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.Color = Color3.new(0, 0, 0)
+		end
+	end
+
+	local humanoid = model:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:TakeDamage(humanoid.Health)
+	end
+
+	Debris:AddItem(model, 3)
+end
+
+-- Function to spawn a model
+local function spawnModel(settings)
+	local objects = game:GetObjects(assetId)
+	if #objects == 0 then return end
+
+	local model = objects[1]
+	model.Parent = workspace
+
+	if not model:IsA("Model") then return end
+
+	-- Set PrimaryPart
+	if not model.PrimaryPart then
+		local primary = model:FindFirstChildWhichIsA("BasePart")
+		if primary then
+			model.PrimaryPart = primary
+		else
+			return
+		end
+	end
+
+	-- Customize model parts
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = false
+			part.Massless = true
+			part.Color = Color3.new(0, 0, 0) -- black
+			part.Size *= settings.Scale
+		elseif part:IsA("Decal") then
+			part:Destroy()
+		end
+	end
+
+	local rootCFrame = humRootPart.CFrame
+	local lookVector = rootCFrame.LookVector
+	local offset = Vector3.new(
+		settings.MoveRight - settings.MoveLeft,
+		settings.MoveUp - settings.MoveDown,
+		settings.MoveForward - settings.MoveBackward
+	)
+
+	local spawnCFrame = rootCFrame + rootCFrame:VectorToWorldSpace(offset)
+	local facingRotation = CFrame.new(Vector3.zero, lookVector)
+
+	local basePos = spawnCFrame.Position
+	local belowPos = basePos - Vector3.new(0, settings.RiseHeight, 0)
+	local finalCFrame = CFrame.new(basePos) * facingRotation
+
+	model:SetPrimaryPartCFrame(CFrame.new(belowPos) * facingRotation)
+
+	-- Rise animation
+	local riseTween = TweenService:Create(model.PrimaryPart, TweenInfo.new(settings.RiseTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		CFrame = finalCFrame
+	})
+	riseTween:Play()
+
+	-- Sink and destroy
+	task.delay(settings.DestroyDelay - settings.SinkTime, function()
+		if model and model.PrimaryPart then
+			local sinkTween = TweenService:Create(model.PrimaryPart, TweenInfo.new(settings.SinkTime, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+				CFrame = CFrame.new(basePos - Vector3.new(0, settings.RiseHeight, 0)) * facingRotation
+			})
+			sinkTween:Play()
+			sinkTween.Completed:Wait()
+			model:Destroy()
+		end
+	end)
+end
+
+-- Image trail function
+local function displayImage()
+	local imagePart = Instance.new("Part")
+	imagePart.Size = Vector3.new(60, 1, 60)
+	imagePart.Anchored = true
+	imagePart.CanCollide = false
+	imagePart.Transparency = 1
+	imagePart.CFrame = humRootPart.CFrame * CFrame.new(0, -3.1, 0)
+	imagePart.Name = "AuraField"
+	imagePart.Parent = workspace
+
+	local decal = Instance.new("Decal")
+	decal.Texture = imageId
+	decal.Face = Enum.NormalId.Top
+	decal.Transparency = 0
+	decal.Parent = imagePart
+
+	local npcTargets = {}
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj ~= character then
+			local hrp = obj:FindFirstChild("HumanoidRootPart")
+			local hum = obj:FindFirstChildOfClass("Humanoid")
+
+			local isPlayer = false
+			for _, p in pairs(Players:GetPlayers()) do
+				if p.Character == obj then
+					isPlayer = true
+					break
+				end
+			end
+
+			if hrp and hum and not isPlayer then
+				table.insert(npcTargets, {Model = obj, HRP = hrp, Hum = hum})
+			end
+		end
+	end
+
+	local slowedNPCs = {}
+
+	local connection
+	connection = RunService.Heartbeat:Connect(function()
+		if not imagePart or not imagePart.Parent then return end
+
+		local imageRadius = imagePart.Size.X / 2
+		local center = imagePart.Position
+
+		for _, target in ipairs(npcTargets) do
+			if target.Hum and target.Hum.Health > 0 then
+				local pos = target.HRP.Position
+				local distToImage = (pos - center).Magnitude
+				local distToPlayer = (pos - humRootPart.Position).Magnitude
+
+				if distToImage <= imageRadius then
+					local slowFactor
+					if distToPlayer <= freezeDistance then
+						slowFactor = 0
+					elseif distToPlayer <= 15 then
+						slowFactor = (distToPlayer - freezeDistance) / (15 - freezeDistance)
+					elseif distToPlayer <= maxSlowDistance then
+						slowFactor = distToPlayer / maxSlowDistance
+					else
+						slowFactor = 1
+					end
+
+					local newSpeed = math.clamp(16 * slowFactor, 0, 16)
+					target.Hum.WalkSpeed = newSpeed
+
+					if not slowedNPCs[target.Hum] then
+						slowedNPCs[target.Hum] = true
+						applyInkEffect(target.HRP)
+					end
+				end
+			end
+		end
+	end)
+
+	task.delay(imageDuration, function()
+		local fadeTween = TweenService:Create(decal, TweenInfo.new(fadeTime), { Transparency = 1 })
+		local sizeTween = TweenService:Create(imagePart, TweenInfo.new(fadeTime), { Size = Vector3.new(maxSize, 1, maxSize) })
+		fadeTween:Play()
+		sizeTween:Play()
+
+		task.delay(fadeTime, function()
+			if connection then connection:Disconnect() end
+		end)
+
+		task.delay(fadeTime + resetDelay, function()
+			for _, target in ipairs(npcTargets) do
+				if target.Hum and target.Hum.Health > 0 then
+					target.Hum.WalkSpeed = 16
+
+					local ink = target.HRP:FindFirstChild("InkEffect")
+					if ink then
+						ink.Enabled = false
+						Debris:AddItem(ink, 1)
+					end
+
+					if math.random(1, 2) == 1 then
+						turnBlackAndDie(target.Model)
+					end
+				end
+			end
+		end)
+	end)
+
+	Debris:AddItem(imagePart, imageDuration + fadeTime)
+end
+
+-- Execute both
+spawnModel({
+	MoveRight = 3,
+	MoveLeft = 0,
+	MoveUp = 0,
+	MoveDown = 0,
+	MoveForward = 0,
+	MoveBackward = 0,
+	DestroyDelay = 5,
+	RiseHeight = 10,
+	RiseTime = 0.5,
+	SinkTime = 0.5,
+	Scale = 12
+})
+
+displayImage()
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local hitSounds = {
+	"http://www.roblox.com/asset/?id=0",
+	"http://www.roblox.com/asset/?id=0"
+}
+
+local function burnTarget(target)
+	if target and target:FindFirstChildOfClass("Humanoid") and not target:FindFirstChild("Burning") then
+		local tag = Instance.new("BoolValue", target)
+		tag.Name = "Burning"
+
+		local humanoid = target:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.Died:Connect(function()
+				local burningTag = target:FindFirstChild("Burning")
+				if burningTag then burningTag:Destroy() end
+			end)
+		end
+
+		local burnSound = Instance.new("Sound", target:FindFirstChild("HumanoidRootPart") or target)
+		burnSound.SoundId = hitSounds[math.random(1, #hitSounds)]
+		burnSound.Volume = 3
+		burnSound:Play()
+		Debris:AddItem(burnSound, 4)
+
+		local fire = Instance.new("Fire")
+		fire.Size = 5
+		fire.Heat = 10
+		fire.Color = Color3.new(0, 0, 0)
+		fire.SecondaryColor = Color3.new(0, 0, 0)
+		fire.Parent = target:FindFirstChild("HumanoidRootPart") or target
+		Debris:AddItem(fire, 3)
+
+		humanoid.Health = 0
+	end
+end
+
+local function createR6Clone()
+	local rig = Instance.new("Model")
+	rig.Name = "inks"
+
+	local partsData = {
+		{"Head", Vector3.new(2, 1, 1)},
+		{"Torso", Vector3.new(2, 2, 1)},
+		{"Left Arm", Vector3.new(1, 2, 1)},
+		{"Right Arm", Vector3.new(1, 2, 1)},
+		{"Left Leg", Vector3.new(1, 2, 1)},
+		{"Right Leg", Vector3.new(1, 2, 1)},
+	}
+
+	local function makePart(name, size, color)
+		local part = Instance.new("Part")
+		part.Name = name
+		part.Size = size
+		part.Anchored = false
+		part.CanCollide = true
+		part.Massless = false
+		part.BrickColor = color
+		part.TopSurface = Enum.SurfaceType.Smooth
+		part.BottomSurface = Enum.SurfaceType.Smooth
+		if name == "Head" then
+			local mesh = Instance.new("SpecialMesh", part)
+			mesh.MeshType = Enum.MeshType.Head
+			mesh.Scale = Vector3.new(1.23, 1.23, 1.23)
+		end
+		return part
+	end
+
+	local colorSource = character
+	local colorMap = {
+		["Head"] = colorSource:FindFirstChild("Head") and colorSource.Head.BrickColor or BrickColor.Gray(),
+		["Torso"] = colorSource:FindFirstChild("Torso") and colorSource.Torso.BrickColor or BrickColor.Gray(),
+		["Left Arm"] = colorSource:FindFirstChild("Left Arm") and colorSource["Left Arm"].BrickColor or BrickColor.Gray(),
+		["Right Arm"] = colorSource:FindFirstChild("Right Arm") and colorSource["Right Arm"].BrickColor or BrickColor.Gray(),
+		["Left Leg"] = colorSource:FindFirstChild("Left Leg") and colorSource["Left Leg"].BrickColor or BrickColor.Gray(),
+		["Right Leg"] = colorSource:FindFirstChild("Right Leg") and colorSource["Right Leg"].BrickColor or BrickColor.Gray(),
+	}
+
+	local parts = {}
+	for _, data in ipairs(partsData) do
+		local name, size = data[1], data[2]
+		local part = makePart(name, size, colorMap[name])
+		part.Parent = rig
+		parts[name] = part
+	end
+
+	local function weld(a, b, offset)
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0 = a
+		weld.Part1 = b
+		weld.Parent = a
+		b.CFrame = a.CFrame * (offset or CFrame.new())
+	end
+
+	local root = parts["Torso"]
+	root.Name = "HumanoidRootPart"
+
+	weld(root, parts["Head"], CFrame.new(0, 1.5, 0))
+	weld(root, parts["Left Arm"], CFrame.new(-1.5, 0, 0))
+	weld(root, parts["Right Arm"], CFrame.new(1.5, 0, 0))
+	weld(root, parts["Left Leg"], CFrame.new(-0.5, -2, 0))
+	weld(root, parts["Right Leg"], CFrame.new(0.5, -2, 0))
+
+	local humanoid = Instance.new("Humanoid")
+	humanoid.WalkSpeed = 16
+	humanoid.Health = 100
+	humanoid.MaxHealth = 100
+	humanoid.NameDisplayDistance = 0
+	humanoid.HealthDisplayDistance = 0
+	humanoid.Parent = rig
+
+	local tag = Instance.new("BoolValue")
+	tag.Name = "IsClone"
+	tag.Parent = rig
+
+	rig.PrimaryPart = root
+	return rig
+end
+
+local function applyCloneBehavior(clone)
+	local humanoid = clone:FindFirstChildOfClass("Humanoid")
+	local hrp = clone:FindFirstChild("HumanoidRootPart")
+	if not humanoid or not hrp then return end
+
+	local start = tick()
+	local loop = RunService.Heartbeat:Connect(function()
+		if not clone or not clone.Parent then loop:Disconnect() return end
+		if tick() - start > 20 then
+			clone:Destroy()
+			loop:Disconnect()
+			return
+		end
+
+		local closest, minDist = nil, math.huge
+		for _, npc in pairs(workspace:GetDescendants()) do
+			if npc:IsA("Model") and npc ~= clone and npc ~= character and not npc:FindFirstChild("IsClone") and not Players:GetPlayerFromCharacter(npc) then
+				local hum = npc:FindFirstChildOfClass("Humanoid")
+				local npcHRP = npc:FindFirstChild("HumanoidRootPart")
+				if hum and npcHRP and hum.Health > 0 and not npc:FindFirstChild("Burning") then
+					local dist = (npcHRP.Position - hrp.Position).Magnitude
+					if dist < minDist then
+						closest = npc
+						minDist = dist
+					end
+				end
+			end
+		end
+
+		if closest then
+			local npcHRP = closest:FindFirstChild("HumanoidRootPart")
+			if npcHRP then
+				humanoid:MoveTo(npcHRP.Position)
+				if (npcHRP.Position - hrp.Position).Magnitude < 4 then
+					burnTarget(closest)
+					clone:Destroy()
+					loop:Disconnect()
+				end
+			end
+		end
+	end)
+
+	Debris:AddItem(clone, 20)
+end
+
+for i = 1, 2 do
+	local clone = createR6Clone()
+	clone.Parent = workspace
+	local offset = Vector3.new(i == 1 and -5 or 5, 0, -4)
+	local origin = character:FindFirstChild("HumanoidRootPart")
+	if origin then
+		clone:SetPrimaryPartCFrame(CFrame.new(origin.Position + offset))
+	end
+	applyCloneBehavior(clone)
+end
+local Intensity = 0.4
+local ShakeLength = 1.5
+local FadeLength = 0.5
+
+-- Don't change anything below unless you know what you're doing
+coroutine.wrap(function()
+	local rn = Random.new()
+	local int = Instance.new("NumberValue")
+	int.Value = Intensity
+
+	local heartbeatConnection
+	heartbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+		local char = game.Players.LocalPlayer.Character
+		if char and char:FindFirstChild("Humanoid") then
+			char.Humanoid.CameraOffset = Vector3.new(
+				rn:NextNumber(-int.Value, int.Value),
+				rn:NextNumber(-int.Value, int.Value),
+				rn:NextNumber(-int.Value, int.Value)
+			)
+		end
+	end)
+
+	task.wait(ShakeLength)
+
+	local tween = game:GetService("TweenService"):Create(int, TweenInfo.new(FadeLength, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Value = 0})
+	tween:Play()
+	tween.Completed:Wait()
+
+	heartbeatConnection:Disconnect()
+end)()
