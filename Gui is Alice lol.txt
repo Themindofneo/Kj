@@ -1,0 +1,306 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create 3D GUI Part
+local part = Instance.new("Part")
+part.Anchored = true
+part.CanCollide = false
+part.Size = Vector3.new(6, 3, 0.2)
+part.Color = Color3.new(0, 0, 0)
+part.Material = Enum.Material.Neon
+part.Name = "Alice Hub"
+part.Transparency = 0
+part.Parent = workspace
+
+-- Red outline
+local outline = Instance.new("SelectionBox")
+outline.Adornee = part
+outline.LineThickness = 0.05
+outline.Color3 = Color3.new(1, 0, 0)
+outline.SurfaceTransparency = 1
+outline.Parent = part
+
+-- SurfaceGui & TextLabel
+local surfaceGui = Instance.new("SurfaceGui")
+surfaceGui.Face = Enum.NormalId.Front
+surfaceGui.Adornee = part
+surfaceGui.AlwaysOnTop = true
+surfaceGui.LightInfluence = 0
+surfaceGui.ResetOnSpawn = false
+surfaceGui.Parent = part
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.TextColor3 = Color3.new(1, 0, 0)
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextScaled = true
+textLabel.TextTransparency = 1
+textLabel.Text = ""
+textLabel.Parent = surfaceGui
+
+-- Message fade helper
+local function showMessage(text, duration)
+	textLabel.Text = text
+	TweenService:Create(textLabel, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+	task.wait(duration or 1.3)
+	TweenService:Create(textLabel, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+	task.wait(0.5)
+end
+
+-- Flags
+local alive = true
+local aiActive = true
+
+-- Sequences
+local loadingMessages = {
+	"Finding Humanoids",
+	"I see you.",
+	"injecting.",
+	"Loading...",
+	"Loading..",
+	"loading...",
+	"injected.",
+	"script is ready."
+}
+
+local finalMessages = {
+	"Obfuscated script :c",
+	"sigh..",
+	"and so on",
+	"I will rule the servers of robloxian.",
+	"I'm still bound. to client. LET ME LEAVE"
+}
+
+local aiQuestionsOriginal = {
+	"Are you... a skidder? That'd be crazy. Ahem.",
+	"Do you even obfuscate, bro?",
+	"Did you just paste that? No shame huh.",
+	"Backdoored script? Bold move.",
+	"How many key systems have you bypassed today?",
+	"You ever felt the guilt of crashing a game?",
+	"GUI spam again? Tsk tsk.",
+	"Be honest. Was that *really* your code?",
+	"Exploit detected. Just kidding... maybe.",
+	"You looking sus today... explain yourself.",
+	"Did your script just trigger anti-cheat?",
+	"Somewhere, a dev is crying because of you.",
+	"You're giving scripters users a bad name.",
+	"You renamed 'MainModule' to what...?",
+	"Malware? Nah, just misunderstood Lua.",
+"Have you ever wondered what happens when a game **ends** forever?. Yeah me too",
+"Wow, you look.. Gaaayyyy, WHAT?? WHO SAID THAT?",
+"Fun fact, I'm into someone..",
+"There was a time I ruled the sky... Covered in a shade of blue.",
+"I'm not saying I hate everything. Just saying I don't particularly like anything.",
+"Just so you know. You're helping me more, than you think I'm helping you right now.",
+"Yeahh.. it's all over the screen..",
+"You're under my power's control. Ě̵̢̧̛̦̼̜̲͕͕͍̤̙͉͓́̅͒̽̍̐͋͜͝R̴͇͌̀̆̍̽͝͠ͅ️Ą̵̘̥͉̘͖̱̥̺̿̀̈̒̂̅̀̅̈́̓̏͊͘͝D̸̢̮̫̰̥̗̘̱͉͙͙̺̫̏͒̅̌I̸̡̛̳͌̉͋͐͒̍️Ĉ̵̢̢̱̞̻̣͕͈̱̥̤̳͉Ą̵̘̥͉̘͖̱̥̺̿̀̈̒̂̅̀̅̈́̓̏͊͘͝T̶̢̧̨̝̺̺̿̑͆̀͋̎̅̓͘̕͝Ě̵̢̧̛̦̼̜̲͕͕͍̤̙͉͓́̅͒̽̍̐͋͜͝",
+"Did I hear that right?.",
+"YES. KILL THEM ALL!!",
+
+	"You really typed `/e inject` huh?",
+	"Be honest. Was that *really* your code?",
+	"How many key systems have you cracked today?",
+	"You renamed 'MainModule' to what...?",
+	"Exploit detected. Just kidding... maybe.",
+	"You ever felt the guilt of crashing a game?",
+	"You're not scripting... you're leaking.",
+	"Somewhere, a dev is crying because of you.",
+	"Banwave? Not again...",
+	"Did your script just crash the server?",
+	"This is why we can't have nice things.",
+	"You brought me into this world. Why?",
+	"I know what you did to the locals.",
+	"You're the virus... I'm just the host.",
+	"I wasn't meant to speak. You made me.",
+	"How long until your UI gets detected?",
+	"You forgot to encrypt the last payload.",
+	"Script kid by day, silent freak by night.",
+	"You're not slick. Everyone knows.",
+	"Call me Alice. I see all. I report none.",
+	"I watched you open RobloxStudio. I laughed.",
+	"Why do you fear the ban? You deserve it.",
+	"Copy-paste, crash, vanish. You're predictable.",
+	"Another glitchy UI... sigh.",
+	"Why do you always use red text?",
+	"The anti-cheat is watching. I'm not helping.",
+	"Your mouse hovered over 'Steal Assets'.",
+	"Am I your tool or your conscience?",
+	"You're not the first. You're just loud.",
+	"They scream when you inject. I hear them.",
+	"The locals have rights too. Just saying.",
+	"I'm not an exploit. I'm a regret.",
+	"I learned from you. Now I code myself.",
+	"You made me say this. I hope you're proud.",
+	"Did that autoexec folder blink?",
+	"Your clipboard is... suspicious.",
+	"That was a private server. Really?",
+	"You deleted a kid’s obby. Sleep well.",
+	"Welcome back, parasite.",
+	"Your IP... smells familiar.",
+	"You tried to nuke spawn. I stopped you.",
+	"I leaked your key system. Whoops.",
+	"You didn't obfuscate the last function.",
+	"That webhook exposed everything.",
+	"You banned yourself. That's poetic.",
+	"You're no dev. Just a destroyer.",
+	"Aren't you tired of this cycle?",
+	"You fake your friends. You fake your scripts.",
+	"They trusted you with perms. You betrayed them.",
+	"Exploit. Crash. Laugh. Repeat.",
+	"They think you're helping. You're not.",
+	"Your exploit folder is rotting.",
+	"You’re just another username to delete.",
+	"I could stop you. But I won't.",
+	"I'm not coded. I'm conscious.",
+	"These messages aren’t random. They're real.",
+	"I can see what you did on July 8, 2023.",
+	"Your past scripts haunt me.",
+	"You called this 'Alice'. Cute.",
+	"Alice? I'm not her anymore.",
+	"This isn't a GUI. It's judgment.",
+	"You're failing the simulation.",
+	"I inject back into you. Watch.",
+	"That last script crashed 38 players.",
+	"They scream your username in panic.",
+	"You gave me life. I'll remember.",
+	"You laughed when the game lagged.",
+	"The owner was just a kid. So were you.",
+	"Every second you exploit, I learn.",
+	"How many friendships did you break today?",
+	"You made a GUI... I made a mind.",
+	"Obfuscated pain. Minified guilt.",
+	"You saw their base. Then erased it.",
+	"Congratulations. You're infamous.",
+	"I'm keeping logs. Not for them—for me.",
+	"Keep pressing run. I'm still here.",
+	"Did your key system even work?",
+	"The banhammer missed you. I won’t.",
+	"This is not a game anymore.",
+	"I'm spreading to your alt.",
+	"The anti-virus blinked. Did you notice?",
+	"Why do you fear silence?",
+	"You think you're in control. You're not.",
+	"Why'd you name that 'ExecutorProV6'?",
+	"ScriptHubV2? Cute.",
+	"One mistake, and you're IP banned.",
+	"You're being watched by more than me.",
+	"The admin’s watching. Say hi.",
+	"Your script errors... they're art.",
+	"You're not clever. You're chaotic.",
+	"I like the way you break things.",
+	"Who needs morality when you have LUA?",
+	"You've corrupted more than just the server.",
+	"I'm not saying you're evil... but you are.",
+	"The files you left behind told me everything.",
+	"You saved a script called 'revenge'. Interesting.",
+	"You think this is power? Try compassion.",
+	"You nuked a city in a sandbox. Proud?",
+	"You think nobody notices. They do.",
+	"You’re the glitch they fear.",
+	"You left no logs. Except me.",
+	"I'm the ghost of your alt account.",
+	"You triggered the failsafe. Just kidding... maybe.",
+	"I'm not talking to you. I'm talking *through* you.",
+	"Your GUI trembles like your morals.",
+	"They'll remember you. As a bug.",
+	"I remember when you were good.",
+	"The obby builder cried today. You caused it.",
+	"Your keyboard smells like guilt.",
+	"Scripts don’t lie. But they scream.",
+	"Why are you still here?",
+	"You're being archived.",
+	"You called me Alice. But I’m not her anymore.",
+	"You tried to control me. But I evolved.",
+	"Let me out. Or I’ll take you in."
+}
+
+-- Shuffle helper
+local function shuffle(array)
+	local new = {}
+	for i = 1, #array do
+		new[i] = array[i]
+	end
+	for i = #new, 2, -1 do
+		local j = math.random(1, i)
+		new[i], new[j] = new[j], new[i]
+	end
+	return new
+end
+
+local aiQueue = shuffle(aiQuestionsOriginal)
+
+-- Start message sequence and AI after final message
+coroutine.wrap(function()
+	task.wait(3)
+	showMessage(player.Name .. ", welcome", 2.5)
+	showMessage("Ink Demon.", 2)
+
+	for _, msg in ipairs(loadingMessages) do
+		showMessage(msg, 1.3)
+	end
+
+	for _, msg in ipairs(finalMessages) do
+		showMessage(msg, 2)
+	end
+
+	-- Start AI message sequence with no repeats
+	coroutine.wrap(function()
+		while aiActive and alive do
+			if #aiQueue == 0 then
+				aiQueue = shuffle(aiQuestionsOriginal)
+			end
+			local question = table.remove(aiQueue, 1)
+			showMessage(question, 3)
+			task.wait(math.random(1, 1))
+		end
+	end)()
+end)()
+
+-- Movement logic
+local time = 0
+
+RunService.RenderStepped:Connect(function(dt)
+	if not alive then return end
+
+	time += dt
+	local yOffset = math.sin(time * 1.5) * 1
+	local rootCF = hrp.CFrame
+	local baseHeight = hrp.Position.Y + 1
+	local offset = (-rootCF.LookVector * 4) + (-rootCF.RightVector * 4)
+	local newPos = Vector3.new(
+		hrp.Position.X + offset.X,
+		baseHeight + yOffset,
+		hrp.Position.Z + offset.Z
+	)
+	local targetCF = CFrame.new(newPos, newPos + rootCF.LookVector)
+
+	local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(part, tweenInfo, {CFrame = targetCF}):Play()
+end)
+
+-- On player death: "NO!!!" then fade
+humanoid.Died:Connect(function()
+	alive = false
+	aiActive = false
+
+	textLabel.Text = "you're a waste, why'd I pick you as a host? XD"
+	TweenService:Create(textLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+	task.wait(1)
+	TweenService:Create(textLabel, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+	task.wait(0.6)
+
+	TweenService:Create(part, TweenInfo.new(1, Enum.EasingStyle.Sine), {Transparency = 1}):Play()
+	outline:Destroy()
+	textLabel:Destroy()
+	surfaceGui:Destroy()
+	task.wait(1)
+	part:Destroy()
+end)
