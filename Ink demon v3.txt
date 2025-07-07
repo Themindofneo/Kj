@@ -1,0 +1,1173 @@
+
+--------------[]]][[[]][]]]][][][--------------
+
+-- Camera Shake Script (Non-blocking)
+local Intensity = 0.4
+local ShakeLength = 7.5
+local FadeLength = 0.5
+
+-- Don't change anything below unless you know what you're doing
+coroutine.wrap(function()
+	local rn = Random.new()
+	local int = Instance.new("NumberValue")
+	int.Value = Intensity
+
+	local heartbeatConnection
+	heartbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+		local char = game.Players.LocalPlayer.Character
+		if char and char:FindFirstChild("Humanoid") then
+			char.Humanoid.CameraOffset = Vector3.new(
+				rn:NextNumber(-int.Value, int.Value),
+				rn:NextNumber(-int.Value, int.Value),
+				rn:NextNumber(-int.Value, int.Value)
+			)
+		end
+	end)
+
+	task.wait(ShakeLength)
+
+	local tween = game:GetService("TweenService"):Create(int, TweenInfo.new(FadeLength, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Value = 0})
+	tween:Play()
+	tween.Completed:Wait()
+
+	heartbeatConnection:Disconnect()
+end)()
+--- shake
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 50, 0)
+wait(0.1)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Wait for character and its essential parts
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- Anchor only the root part (not the whole character) to avoid breaking animation
+hrp.Anchored = true
+
+-- Delay for 1 second
+task.delay(7, function()
+	-- Unanchor
+	if hrp and hrp.Parent then
+		hrp.Anchored = false
+	end
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://94099358"
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.5
+animationTrack:Play(fadeTime)
+animationTrack.TimePosition = 0.5
+animationTrack:AdjustSpeed(0)
+
+task.delay(7, function()
+    animationTrack:Stop(fadeTime)
+end)
+local assetId = "rbxassetid://79836629707795" -- test model
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+--------------[setting]--------------
+local DestroyDelay = 7
+
+-- Spawn the model
+local objects = game:GetObjects(assetId)
+if #objects > 0 then
+	local model = objects[1]
+	model.Parent = workspace
+
+	if model:IsA("Model") then
+		-- Set PrimaryPart if not already
+		if not model.PrimaryPart then
+			local primary = model:FindFirstChildWhichIsA("BasePart")
+			if primary then
+				model.PrimaryPart = primary
+			end
+		end
+
+		-- Make body parts invisible and disable collision
+		local bodyParts = {
+			"Head", "Torso", "UpperTorso", "LowerTorso",
+			"Left Arm", "LeftUpperArm", "LeftLowerArm", "LeftHand",
+			"Right Arm", "RightUpperArm", "RightLowerArm", "RightHand",
+			"Left Leg", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot",
+			"Right Leg", "RightUpperLeg", "RightLowerLeg", "RightFoot"
+		}
+
+		for _, partName in ipairs(bodyParts) do
+			local part = model:FindFirstChild(partName, true)
+			if part and part:IsA("BasePart") then
+				part.Transparency = 1
+				part.CanCollide = false
+				part.Massless = true
+			end
+		end
+
+		-- Full safety: disable collision and mass on everything
+		for _, obj in ipairs(model:GetDescendants()) do
+			if obj:IsA("BasePart") then
+				obj.CanCollide = false
+				obj.Massless = true
+			end
+		end
+
+		-- Extra: ensure Morph's HumanoidRootPart (if exists) is non-collidable
+		local morphHumanoid = model:FindFirstChildOfClass("Humanoid")
+		if morphHumanoid then
+			local root = morphHumanoid.RootPart
+			if root and root:IsA("BasePart") then
+				root.CanCollide = false
+				root.Massless = true
+			end
+		end
+
+		-- Follow local player's torso every frame
+		local running = true
+		local followConnection = RunService.RenderStepped:Connect(function()
+			if running and model and model.PrimaryPart and character and character.Parent then
+				local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso") or humRootPart
+				if torso then
+					model:SetPrimaryPartCFrame(torso.CFrame)
+				end
+			end
+		end)
+
+		-- Destroy on death
+		humanoid.Died:Connect(function()
+			running = false
+			if followConnection then followConnection:Disconnect() end
+			if model then model:Destroy() end
+		end)
+
+		-- Optional: auto-destroy after time
+		task.delay(DestroyDelay, function()
+			if running then
+				running = false
+				if followConnection then followConnection:Disconnect() end
+				if model then model:Destroy() end
+			end
+		end)
+	end
+end
+---------
+-- [[ finished spawn ]] --
+--------
+--------
+
+-- aura 3
+local assetId = "rbxassetid://79836629707795" -- test model
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+--------------[setting]--------------
+local DestroyDelay = 50
+
+-- Spawn the model
+local objects = game:GetObjects(assetId)
+if #objects > 0 then
+	local model = objects[1]
+	model.Parent = workspace
+
+	if model:IsA("Model") then
+		-- Set PrimaryPart if needed
+		if not model.PrimaryPart then
+			local primary = model:FindFirstChildWhichIsA("BasePart")
+			if primary then
+				model.PrimaryPart = primary
+			end
+		end
+
+		-- Define body part name mappings (morph → player)
+		local bodyParts = {
+			["Head"] = "Head",
+			["Torso"] = "Torso",
+			["UpperTorso"] = "UpperTorso",
+			["LowerTorso"] = "LowerTorso",
+			["Left Arm"] = "LeftUpperArm",
+			["Right Arm"] = "RightUpperArm",
+			["Left Leg"] = "LeftUpperLeg",
+			["Right Leg"] = "RightUpperLeg",
+			["LeftUpperArm"] = "LeftUpperArm",
+			["RightUpperArm"] = "RightUpperArm",
+			["LeftLowerArm"] = "LeftLowerArm",
+			["RightLowerArm"] = "RightLowerArm",
+			["LeftUpperLeg"] = "LeftUpperLeg",
+			["RightUpperLeg"] = "RightUpperLeg",
+			["LeftLowerLeg"] = "LeftLowerLeg",
+			["RightLowerLeg"] = "RightLowerLeg",
+			["LeftFoot"] = "LeftFoot",
+			["RightFoot"] = "RightFoot",
+			["LeftHand"] = "LeftHand",
+			["RightHand"] = "RightHand"
+		}
+
+		-- Transfer particles and make morph invisible
+		for morphPartName, playerPartName in pairs(bodyParts) do
+			local morphPart = model:FindFirstChild(morphPartName, true)
+			local playerPart = character:FindFirstChild(playerPartName, true)
+
+			if morphPart and playerPart and morphPart:IsA("BasePart") and playerPart:IsA("BasePart") then
+				-- Transfer particles
+				for _, particle in ipairs(morphPart:GetChildren()) do
+					if particle:IsA("ParticleEmitter") or particle:IsA("Trail") or particle:IsA("Beam") then
+						local clone = particle:Clone()
+						clone.Parent = playerPart
+						particle:Destroy()
+					end
+				end
+			end
+		end
+
+		-- After particle transfer, destroy the morph body
+		model:Destroy()
+
+		-- Cleanup on player death (optional, in case something lingers)
+		humanoid.Died:Connect(function()
+			for _, partName in pairs(bodyParts) do
+				local part = character:FindFirstChild(partName, true)
+				if part and part:IsA("BasePart") then
+					for _, child in ipairs(part:GetChildren()) do
+						if child:IsA("ParticleEmitter") or child:IsA("Trail") or child:IsA("Beam") then
+							child:Destroy()
+						end
+					end
+				end
+			end
+		end)
+	end
+end
+-- aura 2
+--------------[[ aura 2 ]]--------------
+local assetId = "rbxassetid://10660480132" -- test model
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+--------------[setting]--------------
+local MoveRight = 0
+local MoveLeft = 0
+local MoveUp = 0
+local MoveDown = 0
+local MoveForward = 0
+local MoveBackward = 0
+
+-- Position offset relative to look direction
+local Offset = Vector3.new(
+	MoveRight - MoveLeft,
+	MoveUp - MoveDown,
+	MoveForward - MoveBackward
+)
+
+---[Spawn model and apply effect]---
+local objects = game:GetObjects(assetId)
+if #objects > 0 then
+	local model = objects[1]
+	model.Parent = workspace
+	if model:IsA("Model") then
+		if not model.PrimaryPart then
+			local primary = model:FindFirstChildWhichIsA("BasePart")
+			if primary then
+				model.PrimaryPart = primary
+			end
+		end
+
+		for _, part in ipairs(model:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = false
+				part.Massless = true
+			end
+		end
+
+		if model.PrimaryPart then
+			local rootCFrame = humRootPart.CFrame
+			local lookVector = rootCFrame.LookVector
+			local spawnCFrame = rootCFrame + rootCFrame:VectorToWorldSpace(Offset)
+			local facingRotation = CFrame.new(Vector3.zero, lookVector)
+			model:SetPrimaryPartCFrame(CFrame.new(spawnCFrame.Position) * facingRotation)
+		end
+
+		-- Clone the effect and apply to player's limbs
+		local aura = workspace:FindFirstChild("Otherworldly Aura")
+		if aura and aura:FindFirstChild("Head") then
+			local effect = aura.Head:GetChildren()[8]
+			if effect then
+				local partNames = {
+					"Head", "Torso", "UpperTorso",
+					"Left Arm", "LeftUpperArm",
+					"Right Arm", "RightUpperArm",
+					"Left Leg", "LeftUpperLeg",
+					"Right Leg", "RightUpperLeg"
+				}
+
+				local appliedEffects = {}
+
+				for _, partName in ipairs(partNames) do
+					local limb = character:FindFirstChild(partName)
+					if limb and limb:IsA("BasePart") then
+						local clonedEffect = effect:Clone()
+						clonedEffect.Parent = limb
+						table.insert(appliedEffects, clonedEffect)
+					end
+				end
+
+				-- Destroy model now since we don't need it anymore
+				model:Destroy()
+
+				-- Cleanup particles if player dies
+				humanoid.Died:Connect(function()
+					for _, p in ipairs(appliedEffects) do
+						if p and p.Parent then
+							p:Destroy()
+						end
+					end
+				end)
+			else
+				-- Cleanup if no effect found
+				model:Destroy()
+			end
+		else
+			-- Cleanup if no aura found
+			model:Destroy()
+		end
+	end
+end
+
+-- torso spin
+-------------------------- [[ TORSO SPIN ]] -------------------------
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local torso = character:WaitForChild("HumanoidRootPart") or character:WaitForChild("Torso")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create the visual effect part
+local effectPart = Instance.new("Part")
+effectPart.Size = torso.Size
+effectPart.Transparency = 1 -- Fully invisible
+effectPart.CanCollide = false
+effectPart.Anchored = true
+effectPart.Name = "SpinningEffect"
+effectPart.Material = Enum.Material.SmoothPlastic
+effectPart.Color = Color3.fromRGB(128, 128, 128)
+effectPart.CastShadow = false
+effectPart.Parent = workspace
+
+-- Add red outline using SelectionBox
+local outline = Instance.new("SelectionBox")
+outline.Adornee = effectPart
+outline.LineThickness = 0.05
+outline.SurfaceTransparency = 0.5
+outline.Color3 = Color3.new(1, 0, 0)
+outline.Parent = effectPart
+
+-- Rotation angles
+local rotation = Vector3.new(0, 0, 0)
+
+-- Update each frame
+local connection
+connection = RunService.RenderStepped:Connect(function()
+	if not character or not torso or not effectPart then return end
+
+	-- Follow the torso
+	effectPart.CFrame = torso.CFrame * CFrame.Angles(
+		math.rad(rotation.X),
+		math.rad(rotation.Y),
+		math.rad(rotation.Z)
+	)
+
+	-- 1.5x faster random spin
+	rotation = rotation + Vector3.new(
+		math.random(-5, 5) * 1.5,
+		math.random(15, 25) * 1.5,
+		math.random(-5, 5) * 1.5
+	)
+end)
+
+-- Cleanup when player dies
+humanoid.Died:Connect(function()
+	if connection then connection:Disconnect() end
+	if effectPart then effectPart:Destroy() end
+end)
+-- aura
+-------------------------- [[ INK AURA ]] -------------------------
+local assetId = "rbxassetid://17659313890" -- test model
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Settings
+local MoveRight = 0
+local MoveLeft = 0
+local MoveUp = 0
+local MoveDown = 0
+local MoveForward = 0
+local MoveBackward = 0
+
+local Offset = Vector3.new(
+	MoveRight - MoveLeft,
+	MoveUp - MoveDown,
+	MoveForward - MoveBackward
+)
+
+-- Load the model
+local objects = game:GetObjects(assetId)
+if #objects == 0 then return end
+
+local model = objects[1]
+model.Parent = workspace
+
+-- Transparent the dummy R6 parts
+local rig = workspace:FindFirstChild("R6")
+if rig and rig:IsA("Model") then
+	for _, partName in ipairs({
+		"HumanoidRootPart", "Head", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "Torso"
+	}) do
+		local part = rig:FindFirstChild(partName)
+		if part and part:IsA("BasePart") then
+			part.Transparency = 1
+			part.CanCollide = false
+		end
+	end
+end
+
+-- Prepare model
+if model:IsA("Model") then
+	if not model.PrimaryPart then
+		local primary = model:FindFirstChildWhichIsA("BasePart")
+		if primary then model.PrimaryPart = primary end
+	end
+
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = false
+			part.Massless = true
+		end
+	end
+
+	-- Position update
+	local function updateModelPosition()
+		local rootCFrame = humRootPart.CFrame
+		local offsetCFrame = rootCFrame + rootCFrame:VectorToWorldSpace(Offset)
+		local facingRotation = CFrame.new(Vector3.zero, rootCFrame.LookVector)
+		model:SetPrimaryPartCFrame(CFrame.new(offsetCFrame.Position) * facingRotation)
+	end
+
+	-- Follow the player
+	local renderConn
+	renderConn = RunService.RenderStepped:Connect(function()
+		if not model or not model.Parent then
+			renderConn:Disconnect()
+			return
+		end
+		updateModelPosition()
+	end)
+
+	-- Remove humanoid inside the model if it exists
+	local modelHumanoid = model:FindFirstChildOfClass("Humanoid")
+	if modelHumanoid then
+		modelHumanoid:Destroy()
+	end
+
+	-- Clone and move particle emitters
+	local bodyParts = {
+		"Head", "Left Arm", "Right Arm", "Torso", "Left Leg", "Right Leg"
+	}
+
+	for _, partName in ipairs(bodyParts) do
+		local sourcePart = rig:FindFirstChild(partName)
+		local targetPart = character:FindFirstChild(partName)
+
+		if sourcePart and targetPart then
+			for _, child in ipairs(sourcePart:GetChildren()) do
+				if child:IsA("ParticleEmitter") then
+					local clone = child:Clone()
+					clone.Name = "[TemporaryEffect]"
+					clone.Parent = targetPart
+					child:Destroy()
+				end
+			end
+		end
+	end
+
+	-- Cleanup on death
+	humanoid.Died:Connect(function()
+		if model then
+			model:Destroy()
+		end
+
+		-- Remove added particle emitters from player's character
+		for _, partName in ipairs(bodyParts) do
+			local part = character:FindFirstChild(partName)
+			if part then
+				for _, child in ipairs(part:GetChildren()) do
+					if child:IsA("ParticleEmitter") and child.Name == "[TemporaryEffect]" then
+						child:Destroy()
+					end
+				end
+			end
+		end
+	end)
+end
+-- walk ink
+
+-------------------------- [[ INK WALK ]] -------------------------
+local imageId = "rbxassetid://87183461906295"
+-- Settings
+local displayInterval = 0.1  -- Display one image every second while walking
+local imageDuration = 1    -- Each image lasts for 1 second
+local fadeTime = 2         -- Time it takes to fade out and enlarge
+-- Variables
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local lastImageTime = 0
+-- TweenService
+local TweenService = game:GetService("TweenService")
+-- Function to create and display the image under the player with fade-out and enlargement effects
+local function displayImage()
+local imagePart = Instance.new("Part")
+imagePart.Size = Vector3.new(5, 1, 5)  -- Start at 2x larger
+imagePart.Anchored = true
+imagePart.CanCollide = false
+imagePart.Transparency = 1  -- Make the block itself transparent
+imagePart.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(0, -3.3, 0)  -- 0.3 studs lower
+-- Create a decal for the image  
+local decal = Instance.new("Decal")  
+decal.Texture = imageId  
+decal.Face = Enum.NormalId.Top  
+decal.Transparency = 0  -- Start fully visible  
+decal.Parent = imagePart  
+imagePart.Parent = workspace  
+-- Tween for fade-out effect  
+local fadeTween = TweenService:Create(  
+    decal,  
+    TweenInfo.new(fadeTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),  
+    {Transparency = 1}  
+)  
+-- Tween for enlargement effect  
+local sizeTween = TweenService:Create(  
+    imagePart,  
+    TweenInfo.new(fadeTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),  
+    {Size = Vector3.new(10, 1, 10)}  -- 2x the original size  
+)  
+-- Play both tweens  
+fadeTween:Play()  
+sizeTween:Play()  
+-- Destroy the image part after the total duration  
+game.Debris:AddItem(imagePart, imageDuration)
+end
+-- Function to check if the player is walking
+local function onUpdate()
+if humanoid.MoveDirection.Magnitude > 0 then
+local currentTime = tick()
+if currentTime - lastImageTime >= displayInterval then
+displayImage()
+lastImageTime = currentTime
+end
+end
+end
+game:GetService("RunService").Heartbeat:Connect(onUpdate)
+local imageId = "rbxassetid://121738704150333"
+local displayInterval = 4
+local imageDuration = 1    
+local fadeTime = 1        
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local lastImageTime = 0
+local TweenService = game:GetService("TweenService")
+local function displayImage()
+local imagePart = Instance.new("Part")
+imagePart.Size = Vector3.new(10, 1, 10)  -- Start at 2x larger
+imagePart.Anchored = true
+imagePart.CanCollide = false
+imagePart.Transparency = 1  -- Make the block itself transparent
+imagePart.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(0, -3.3, 0)
+local decal = Instance.new("Decal")  
+decal.Texture = imageId  
+decal.Face = Enum.NormalId.Top  
+decal.Transparency = 0
+decal.Parent = imagePart  
+imagePart.Parent = workspace    
+local fadeTween = TweenService:Create(  
+    decal,  
+    TweenInfo.new(fadeTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),  
+    {Transparency = 1}  
+)    
+local sizeTween = TweenService:Create(  
+    imagePart,  
+    TweenInfo.new(fadeTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),  
+    {Size = Vector3.new(20, 1, 20)}  -- 2x the original size  
+)    
+fadeTween:Play()  
+sizeTween:Play()    
+game.Debris:AddItem(imagePart, imageDuration)
+end
+local function onUpdate()
+if humanoid.MoveDirection.Magnitude > 0 then
+local currentTime = tick()
+if currentTime - lastImageTime >= displayInterval then
+displayImage()
+lastImageTime = currentTime
+end
+end
+end
+game:GetService("RunService").Heartbeat:Connect(onUpdate)
+-- function and tools.
+-------------------------- [[ FUNCTION ]] -------------------------
+-------------------------- [[ TOOLS FUNCTION ]] -------------------------
+-- punch tool
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+-- Create Tool
+local tool = Instance.new("Tool")
+tool.Name = "Ink Claw"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+-- Idle Animation Setup
+local idleAnim = Instance.new("Animation")
+idleAnim.AnimationId = "rbxassetid://126753849"
+local idleTrack = humanoid:LoadAnimation(idleAnim)
+-- State
+local equipped = false
+local moving = false
+local lastUsed = 0
+local cooldown = 1.3
+local useCount = 0
+
+-- Update animation based on movement
+local function updateAnimation()
+	if equipped then
+		if moving then
+			if idleTrack.IsPlaying then
+				idleTrack:Stop(0.5)
+			end
+		else
+			if not idleTrack.IsPlaying then
+				idleTrack:Play(0.5)
+				idleTrack.TimePosition = 0.5
+				idleTrack:AdjustSpeed(0)
+			end
+		end
+	else
+		if idleTrack.IsPlaying then
+			idleTrack:Stop(0.5)
+		end
+	end
+end
+-- Detect movement
+RunService.RenderStepped:Connect(function()
+	if equipped then
+		local velocity = hrp.Velocity * Vector3.new(1, 0, 1)
+		local isMoving = velocity.Magnitude > 1
+		if isMoving ~= moving then
+			moving = isMoving
+			updateAnimation()
+		end
+	end
+end)
+-- Equip / Unequip
+tool.Equipped:Connect(function()
+	equipped = true
+	moving = (hrp.Velocity * Vector3.new(1, 0, 1)).Magnitude > 1
+	updateAnimation()
+end)
+tool.Unequipped:Connect(function()
+	equipped = false
+	updateAnimation()
+end)
+-- Play animations
+local function playAnimation(animId, fadeTime, timePos, speed, duration)
+	local anim = Instance.new("Animation")
+	anim.AnimationId = "rbxassetid://" .. animId
+	local track = humanoid:LoadAnimation(anim)
+	track:Play(fadeTime)
+	track.TimePosition = timePos
+	track:AdjustSpeed(speed)
+	task.delay(duration, function()
+		track:Stop(fadeTime)
+	end)
+end
+-- Tool activation
+tool.Activated:Connect(function()
+	local now = tick()
+	if now - lastUsed < cooldown then return end
+	lastUsed = now
+	useCount += 1
+	if useCount % 2 == 1 then
+		-- First use animations
+		playAnimation("233329237", 0.1, 10, -0.4, 1)
+		playAnimation("204062532", 0.5, 0, 1, 1)
+	else
+		-- Second use animations
+		playAnimation("233329237", 0.25, 0, 0.6, 1)
+		playAnimation("42071635", 0.5, 0.5, 0, 0.5)
+	end
+end)
+-------------------------- [[ FUNCTION ]] -------------------------
+-------------------------- [[ IDLE ANIMATION ]] -------------------------
+-- idle/walk/jump/idle2
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Only apply custom speed ONCE, not after respawn
+if player.Character then
+	local humanoid = player.Character:FindFirstChild("Humanoid")
+	if humanoid then
+		humanoid.WalkSpeed = 10
+	end
+end
+
+player.CharacterAdded:Connect(function(character)
+	-- Wait for Humanoid to load, then DON'T change WalkSpeed (default stays)
+	character:WaitForChild("Humanoid") -- no speed change on respawn
+end)
+--⫷𓆩[ walk animation 1]𓆪⫸--
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+local fadeTime = 0.15
+local walkAnimation = Instance.new("Animation")
+walkAnimation.AnimationId = "rbxassetid://28440069"
+local walkAnimationTrack = animator:LoadAnimation(walkAnimation)
+local isMoving = false
+local function playWalkAnimation()
+    if not walkAnimationTrack.IsPlaying then
+        walkAnimationTrack:Play(fadeTime)
+        walkAnimationTrack.TimePosition = 0
+        walkAnimationTrack:AdjustSpeed(0.9)
+    end
+end
+local function stopWalkAnimation()
+    if walkAnimationTrack.IsPlaying then
+        walkAnimationTrack:Stop(fadeTime)
+    end
+end
+game:GetService("RunService").Heartbeat:Connect(function()
+    local isCurrentlyMoving = humanoid.MoveDirection.Magnitude > 0
+    if isCurrentlyMoving and not isMoving then        
+        playWalkAnimation()
+        isMoving = true
+    elseif not isCurrentlyMoving and isMoving then     
+        stopWalkAnimation()
+        isMoving = false
+    end
+end)
+--
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+local fadeTime = 0.3
+local walkAnimation = Instance.new("Animation")
+walkAnimation.AnimationId = "rbxassetid://136796440"
+local walkAnimationTrack = animator:LoadAnimation(walkAnimation)
+local isMoving = false
+local function playWalkAnimation()
+    if not walkAnimationTrack.IsPlaying then
+        walkAnimationTrack:Play(fadeTime)
+        walkAnimationTrack.TimePosition = 3.15
+        walkAnimationTrack:AdjustSpeed(0)
+    end
+end
+local function stopWalkAnimation()
+    if walkAnimationTrack.IsPlaying then
+        walkAnimationTrack:Stop(fadeTime)
+    end
+end
+game:GetService("RunService").Heartbeat:Connect(function()
+    local isCurrentlyMoving = humanoid.MoveDirection.Magnitude > 0
+    if isCurrentlyMoving and not isMoving then        
+        playWalkAnimation()
+        isMoving = true
+    elseif not isCurrentlyMoving and isMoving then     
+        stopWalkAnimation()
+        isMoving = false
+    end
+end)
+--
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+local fadeTime = 0.3
+local walkAnimation = Instance.new("Animation")
+walkAnimation.AnimationId = "rbxassetid://182491423"
+local walkAnimationTrack = animator:LoadAnimation(walkAnimation)
+local isMoving = false
+local function playWalkAnimation()
+    if not walkAnimationTrack.IsPlaying then
+        walkAnimationTrack:Play(fadeTime)
+        walkAnimationTrack.TimePosition = 0
+        walkAnimationTrack:AdjustSpeed(0.6)
+    end
+end
+local function stopWalkAnimation()
+    if walkAnimationTrack.IsPlaying then
+        walkAnimationTrack:Stop(fadeTime)
+    end
+end
+game:GetService("RunService").Heartbeat:Connect(function()
+    local isCurrentlyMoving = humanoid.MoveDirection.Magnitude > 0
+    if isCurrentlyMoving and not isMoving then        
+        playWalkAnimation()
+        isMoving = true
+    elseif not isCurrentlyMoving and isMoving then     
+        stopWalkAnimation()
+        isMoving = false
+    end
+end)
+--⫷𓆩[ Unified Walking Direction Animation Trigger — Fade Only on Play/Stop 2 ]𓆪⫸--
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://136796440"
+local animationTrack = humanoid:LoadAnimation(animation)
+
+local fadeTime = 0.2
+local isPlaying = false
+local currentDirection = nil
+
+RunService.RenderStepped:Connect(function()
+	if not character or not hrp then return end
+
+	local moveDir = humanoid.MoveDirection
+	if moveDir.Magnitude > 0 then
+		local forwardDot = hrp.CFrame.LookVector:Dot(moveDir.Unit)
+		local backDot = -hrp.CFrame.LookVector:Dot(moveDir.Unit)
+		local rightDot = hrp.CFrame.RightVector:Dot(moveDir.Unit)
+		local leftDot = -hrp.CFrame.RightVector:Dot(moveDir.Unit)
+
+		local newDirection
+		local newTimePosition
+
+		if forwardDot >= 0.5 then
+			newDirection = "Forward"
+			newTimePosition = 3.15
+		elseif backDot >= 0.5 then
+			newDirection = "Backward"
+			newTimePosition = 4.99
+		elseif rightDot >= 0.5 then
+			newDirection = "Right"
+			newTimePosition = 6
+		elseif leftDot >= 0.5 then
+			newDirection = "Left"
+			newTimePosition = 8
+		end
+
+		if newDirection then
+			if not isPlaying then
+				animationTrack:Play(fadeTime)
+				animationTrack:AdjustSpeed(0)
+				isPlaying = true
+			end
+
+			if newDirection ~= currentDirection then
+				animationTrack.TimePosition = newTimePosition
+				currentDirection = newDirection
+			end
+		else
+			if isPlaying then
+				animationTrack:Stop(fadeTime)
+				isPlaying = false
+				currentDirection = nil
+			end
+		end
+	else
+		if isPlaying then
+			animationTrack:Stop(fadeTime)
+			isPlaying = false
+			currentDirection = nil
+		end
+	end
+end)
+--⫷⟡⫸ 𝑺𝒆𝒄𝒕𝒊𝒐𝒏: camera set up 3 ⫷⟡⫸--
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local function updateCameraOffset()
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local head = character:FindFirstChild("Head")
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if humanoid and head and hrp then
+            local offset = hrp.CFrame:PointToObjectSpace(head.Position)
+            humanoid.CameraOffset = Vector3.new(0, offset.Y - 1.5, offset.Z)
+        end
+    end
+end
+game:GetService("RunService").RenderStepped:Connect(updateCameraOffset)
+
+--⫷𓆩[ Look Right or Back-Right Animation Trigger 4]𓆪⫸--
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+local camera = workspace.CurrentCamera
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://88016955"
+local animationTrack = humanoid:LoadAnimation(animation)
+local fadeTime = 0.5
+local isPlaying = false
+RunService.RenderStepped:Connect(function()
+	if not character or not hrp then return end
+	local charCFrame = hrp.CFrame
+	local camLook = camera.CFrame.LookVector
+	-- Get the dot product between camera and player's right direction
+	local rightDot = charCFrame.RightVector:Dot(camLook)
+	-- Play if looking to the right or back-right (rightDot >= 0.5)
+	if rightDot >= 0.5 then
+		if not isPlaying then
+			animationTrack:Play(fadeTime)
+			animationTrack.TimePosition = 0.5
+			animationTrack:AdjustSpeed(0)
+			isPlaying = true
+		end
+	else
+		if isPlaying then
+			animationTrack:Stop(fadeTime)
+			isPlaying = false
+		end
+	end
+end)
+------------
+Wait(0.1)
+------------
+--⫷⟡⫸ 𝑺𝒆𝒄𝒕𝒊𝒐𝒏: Idle jump animation 7 ⫷⟡⫸--
+
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+-- Fade settings
+local fadeTime = 0.6 -- Time to smoothly adjust animation speed
+-- Jump Animation setup
+local jumpAnimation = Instance.new("Animation")
+jumpAnimation.AnimationId = "rbxassetid://97170520"
+local jumpAnimationTrack = animator:LoadAnimation(jumpAnimation)
+-- Function to play jump animation
+local function playJumpAnimation()
+    if not jumpAnimationTrack.IsPlaying then
+        jumpAnimationTrack:Play(fadeTime)
+        jumpAnimationTrack.TimePosition = 0 -- Start from the beginning
+        jumpAnimationTrack:AdjustSpeed(0.9) -- Normal speed for the jump
+    end
+end
+-- Function to stop jump animation
+local function stopJumpAnimation()
+    if jumpAnimationTrack.IsPlaying then
+        jumpAnimationTrack:Stop(fadeTime)
+    end
+end
+-- Monitor jump events
+humanoid.StateChanged:Connect(function(_, newState)
+    if newState == Enum.HumanoidStateType.Jumping then
+        -- Play jump animation when jumping
+        playJumpAnimation()
+    elseif newState == Enum.HumanoidStateType.Landed then
+        -- Stop jump animation when landing
+        stopJumpAnimation()
+    end
+end)
+--⫷⟡⫸ 𝑺𝒆𝒄𝒕𝒊𝒐𝒏: Idle animation 8 ⫷⟡⫸--
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+-- fade
+local fadeTime = 0.3
+local idleAnimation = Instance.new("Animation")
+idleAnimation.AnimationId = "rbxassetid://21633130"
+local idleAnimationTrack = animator:LoadAnimation(idleAnimation)
+idleAnimationTrack.Looped = true -- Ensure the animation loops
+local isIdlePlaying = false
+local function playIdleAnimation()
+    if not isIdlePlaying then
+        idleAnimationTrack:Play(fadeTime)
+        idleAnimationTrack.TimePosition = 1 -- Start at 1 second
+        idleAnimationTrack:AdjustSpeed(0) -- Slow animation speed
+        isIdlePlaying = true
+    end
+end
+local function stopIdleAnimation()
+    if isIdlePlaying then
+        idleAnimationTrack:Stop(fadeTime)
+        isIdlePlaying = false
+    end
+end
+game:GetService("RunService").Heartbeat:Connect(function()
+    if humanoid.MoveDirection.Magnitude == 0 then
+        -- Play idle animation if standing still
+        playIdleAnimation()
+    else
+        stopIdleAnimation()
+    end
+end)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+-- fade
+local fadeTime = 0.3
+local idleAnimation = Instance.new("Animation")
+idleAnimation.AnimationId = "rbxassetid://94853940"
+local idleAnimationTrack = animator:LoadAnimation(idleAnimation)
+idleAnimationTrack.Looped = true -- Ensure the animation loops
+local isIdlePlaying = false
+local function playIdleAnimation()
+    if not isIdlePlaying then
+        idleAnimationTrack:Play(fadeTime)
+        idleAnimationTrack.TimePosition = 1 -- Start at 1 second
+        idleAnimationTrack:AdjustSpeed(0) -- Slow animation speed
+        isIdlePlaying = true
+    end
+end
+local function stopIdleAnimation()
+    if isIdlePlaying then
+        idleAnimationTrack:Stop(fadeTime)
+        isIdlePlaying = false
+    end
+end
+game:GetService("RunService").Heartbeat:Connect(function()
+    if humanoid.MoveDirection.Magnitude == 0 then
+        -- Play idle animation if standing still
+        playIdleAnimation()
+    else
+        stopIdleAnimation()
+    end
+end)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+-- fade
+local fadeTime = 0.3
+local idleAnimation = Instance.new("Animation")
+idleAnimation.AnimationId = "rbxassetid://31319431"
+local idleAnimationTrack = animator:LoadAnimation(idleAnimation)
+idleAnimationTrack.Looped = true -- Ensure the animation loops
+local isIdlePlaying = false
+local function playIdleAnimation()
+    if not isIdlePlaying then
+        idleAnimationTrack:Play(fadeTime)
+        idleAnimationTrack.TimePosition = 1 -- Start at 1 second
+        idleAnimationTrack:AdjustSpeed(0) -- Slow animation speed
+        isIdlePlaying = true
+    end
+end
+local function stopIdleAnimation()
+    if isIdlePlaying then
+        idleAnimationTrack:Stop(fadeTime)
+        isIdlePlaying = false
+    end
+end
+game:GetService("RunService").Heartbeat:Connect(function()
+    if humanoid.MoveDirection.Magnitude == 0 then
+        -- Play idle animation if standing still
+        playIdleAnimation()
+    else
+        stopIdleAnimation()
+    end
+end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+local fadeTime = 0.5
+local idleAnimation = Instance.new("Animation")
+idleAnimation.AnimationId = "rbxassetid://129423030"
+local idleAnimationTrack = animator:LoadAnimation(idleAnimation)
+idleAnimationTrack.Looped = false -- We handle looping manually
+idleAnimationTrack.Priority = Enum.AnimationPriority.Idle
+local isIdle = false
+local cooldown = false
+local function playIdleCycle()
+	if cooldown then return end
+	cooldown = true
+	idleAnimationTrack:Play(fadeTime)
+	idleAnimationTrack.TimePosition = 0
+	idleAnimationTrack:AdjustSpeed(0.1)
+	task.delay(0.9, function()
+		idleAnimationTrack:Stop(fadeTime)
+		cooldown = false
+	end)
+end
+RunService.Heartbeat:Connect(function()
+	if humanoid.MoveDirection.Magnitude == 0 then
+		isIdle = true
+	else
+		isIdle = false
+		if idleAnimationTrack.IsPlaying then
+			idleAnimationTrack:Stop(fadeTime)
+		end
+	end
+end)
+while true do
+	task.wait(1.59) -- Slightly more than 0.5 to avoid overlap
+	if isIdle then
+		playIdleCycle()
+	end
+end
