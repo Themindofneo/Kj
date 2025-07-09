@@ -1,0 +1,14 @@
+game.StarterGui:SetCore("SendNotification", {
+Title = "Credits and stufff";
+Text = "Credits to the guy that made the reanimation, neo did the animations";
+Duration = 5;
+Icon = "rbxassetid://0"; -- leave it like that if you don't want the icon
+Button1 = "Okay"; -- name of it
+Button2 = "Close"; -- remove this line if you only want 1 button
+})
+-- remove this script at bottom if you don't wan tsb notification sound
+s= Instance.new("Sound")
+s.SoundId = "rbxassetid://10066921516"
+s:Play()
+s.Volume = 3
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Themindofneo/Kj/refs/heads/main/Kj%20client.txt"))()
