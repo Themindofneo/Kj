@@ -1,0 +1,627 @@
+-- SETTINGS --
+local settings = _G
+
+settings["Use default animations"] = true
+settings["Fake character transparency level"] = 1
+settings["Disable character scripts"] = true
+settings["Fake character should collide"] = true
+settings["Parent real character to fake character"] = false
+settings["Respawn character"] = true
+settings["Instant respawn"] = false
+settings["Hide HumanoidRootPart"] = false
+settings["PermaDeath fake character"] = true
+settings["R15 Reanimate"] = false
+settings["Click Fling"] = false
+
+settings["Names to exclude from transparency"] = {
+    -- Example:
+    -- ["HumanoidRootPart"] = true,
+    -- ["Left Arm"] = true
+}
+
+-- Make sure global fling is nil before setup
+(function()
+    if getgenv then
+        getgenv().fling = nil
+    else
+        _G.fling = nil
+    end
+end)()
+
+-- Run the reanimate script in a non-blocking task
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/somethingsimade/CurrentAngleV2/refs/heads/main/v2"))()
+end)
+
+-- You can put your converted script under here
+-- Everything above runs async and non-blocking
+Wait(5)
+------------
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local SPEED_MULTIPLIER = 1.4
+local DEFAULT_SPEED = 16
+
+local function boostSpeed(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	humanoid.WalkSpeed = DEFAULT_SPEED * SPEED_MULTIPLIER
+
+	-- If something sets WalkSpeed later, re-apply boost
+	humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if humanoid.WalkSpeed ~= DEFAULT_SPEED * SPEED_MULTIPLIER then
+			humanoid.WalkSpeed = DEFAULT_SPEED * SPEED_MULTIPLIER
+		end
+	end)
+end
+
+-- Boost when character spawns
+player.CharacterAdded:Connect(boostSpeed)
+
+-- Boost immediately if character already exists
+if player.Character then
+	boostSpeed(player.Character)
+end
+-------------
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Preload animation
+local AnimId = game:GetObjects("rbxassetid://7815618175")[1]
+AnimId.Parent = Character
+local Animating = AnimHandler.new(Character, AnimId)
+Animating.Looped = true
+
+-- Track state
+local isWalking = false
+
+RunService.RenderStepped:Connect(function()
+	if Humanoid.MoveDirection.Magnitude > 0 then
+		if not isWalking then
+			isWalking = true
+			Animating:Play()
+		end
+	else
+		if isWalking then
+			isWalking = false
+			Animating:Stop()
+		end
+	end
+end)
+--------------------
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- GUI Base
+local ScreenGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
+ScreenGui.Name = "ActionGUIs"
+
+-- === Button 1: Animation Cycle ===
+local AnimIDs = {
+	17325510002, -- m1
+	17325513870, -- m2
+	17325522388, -- m3
+	17325537719  -- m4
+}
+local currentIndex = 1
+local currentAnim
+
+local CycleButton = Instance.new("TextButton")
+CycleButton.Size = UDim2.new(0, 100, 0, 40)
+CycleButton.Position = UDim2.new(0, 10, 0.5, -90)
+CycleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+CycleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CycleButton.Font = Enum.Font.SourceSansBold
+CycleButton.TextSize = 18
+CycleButton.Text = "Punch"
+CycleButton.Parent = ScreenGui
+
+local function playCurrentAnimation()
+	local animId = AnimIDs[currentIndex]
+	if currentAnim then currentAnim:Stop() end
+
+	local AnimObj = game:GetObjects("rbxassetid://" .. animId)[1]
+	AnimObj.Parent = Character
+	currentAnim = AnimHandler.new(Character, AnimObj)
+	currentAnim.Looped = false
+	currentAnim:Play()
+
+	currentIndex = currentIndex + 1
+	if currentIndex > #AnimIDs then currentIndex = 1 end
+end
+
+CycleButton.MouseButton1Click:Connect(playCurrentAnimation)
+
+-- === Button 2: Dash ===
+local DashButton = Instance.new("TextButton")
+DashButton.Size = UDim2.new(0, 100, 0, 40)
+DashButton.Position = UDim2.new(0, 10, 0.5, -40)
+DashButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+DashButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DashButton.Font = Enum.Font.SourceSansBold
+DashButton.TextSize = 18
+DashButton.Text = "Dash"
+DashButton.Parent = ScreenGui
+
+local function dash()
+	local rootPart = Character:WaitForChild("HumanoidRootPart")
+
+	-- Leap forward
+	local bodyVelocity = Instance.new("BodyVelocity")
+	bodyVelocity.Velocity = rootPart.CFrame.LookVector * 130
+	bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+	bodyVelocity.P = 5000
+	bodyVelocity.Parent = rootPart
+	game:GetService("Debris"):AddItem(bodyVelocity, 0.2)
+
+	-- Dash Animation
+	local dashAnim = game:GetObjects("rbxassetid://10479335397")[1]
+	dashAnim.Parent = Character
+	local dashPlaying = AnimHandler.new(Character, dashAnim)
+	dashPlaying.Looped = false
+	dashPlaying:Play()
+end
+
+DashButton.MouseButton1Click:Connect(dash)
+
+-- === Button 3: Ultimate ===
+local UltimateButton = Instance.new("TextButton")
+UltimateButton.Size = UDim2.new(0, 100, 0, 40)
+UltimateButton.Position = UDim2.new(0, 10, 0.5, 10)
+UltimateButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+UltimateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+UltimateButton.Font = Enum.Font.SourceSansBold
+UltimateButton.TextSize = 18
+UltimateButton.Text = "Ultimate"
+UltimateButton.Parent = ScreenGui
+
+local function playUltimate()
+	local speed = Humanoid.MoveDirection.Magnitude
+	local animId = speed == 0 and 17140902079 or 18445236460
+
+	local AnimObj = game:GetObjects("rbxassetid://" .. animId)[1]
+	AnimObj.Parent = Character
+	local ultimateAnim = AnimHandler.new(Character, AnimObj)
+	ultimateAnim.Looped = false
+	ultimateAnim:Play()
+end
+
+UltimateButton.MouseButton1Click:Connect(playUltimate)
+----------------
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Maintain camera offset
+local function updateCameraOffset()
+local character = player.Character
+if character then
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+local head = character:FindFirstChild("Head")
+local hrp = character:FindFirstChild("HumanoidRootPart")
+if humanoid and head and hrp then
+local offset = hrp.CFrame:PointToObjectSpace(head.Position)
+humanoid.CameraOffset = Vector3.new(0, offset.Y - 1.5, offset.Z)
+end
+end
+end
+
+game:GetService("RunService").RenderStepped:Connect(updateCameraOffset)
+
+-- Function to create visual effect
+local function createEffect(origin)
+local radius = 15
+local sphere = Instance.new("Part")
+sphere.Shape = Enum.PartType.Ball
+sphere.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
+sphere.Transparency = 0.1
+sphere.BrickColor = BrickColor.Red()
+sphere.Material = Enum.Material.Neon
+sphere.CFrame = origin
+sphere.Anchored = true
+sphere.CanCollide = false
+sphere.Parent = workspace
+game:GetService("Debris"):AddItem(sphere, 0.5)
+end
+
+-- Animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Tool 1: Ravage
+local Ravage = Instance.new("Tool")
+Ravage.Name = "Ravage"
+Ravage.RequiresHandle = false
+Ravage.Parent = player.Backpack
+
+local Cooldown1 = false
+
+Ravage.Equipped:Connect(function()
+if Cooldown1 then return end
+Cooldown1 = true
+
+local Character = player.Character or player.CharacterAdded:Wait()  
+local HRP = Character:FindFirstChild("HumanoidRootPart")  
+if not HRP then Cooldown1 = false return end  
+
+local function AnchorCharacter(state) HRP.Anchored = state end  
+local function StopAnimations()  
+    for _, track in pairs(Character.Humanoid:GetPlayingAnimationTracks()) do  
+        track:Stop()  
+    end  
+end  
+
+StopAnimations()  
+AnchorCharacter(true)  
+
+-- Play first animation  
+local Anim1 = game:GetObjects("rbxassetid://16945573694")[1]  
+Anim1.Parent = Character  
+local Play1 = AnimHandler.new(Character, Anim1)  
+Play1:Play()  
+Play1.Looped = false  
+Play1.Stopped:Wait()  
+
+StopAnimations()  
+
+-- Play second animation  
+local Anim2 = game:GetObjects("rbxassetid://16945550029")[1]  
+Anim2.Parent = Character  
+local Play2 = AnimHandler.new(Character, Anim2)  
+Play2:Play()  
+Play2.Looped = false  
+Play2.Stopped:Wait()  
+
+AnchorCharacter(false)  
+createEffect(HRP.CFrame)  
+
+task.wait(0.1)  
+Cooldown1 = false
+
+end)
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+-- Load animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Function to load animation
+local function loadAnimation(id)
+	local animObj = game:GetObjects("rbxassetid://" .. id)[1]
+	animObj.Parent = Character
+	return animObj
+end
+
+-- Create Tool
+local Tool = Instance.new("Tool")
+Tool.Name = "Swift Sweep"
+Tool.RequiresHandle = false
+Tool.CanBeDropped = false
+
+-- Cooldown settings
+local Cooldown = 4
+local CanUse = true
+
+-- Tool activation behavior
+Tool.Activated:Connect(function()
+	if not CanUse then return end
+	CanUse = false
+
+	-- First animation
+	local anim1 = loadAnimation("16944265635")
+	local animating1 = AnimHandler.new(Character, anim1)
+	animating1.Looped = false
+	animating1:Play(0.3)
+
+	task.spawn(function()
+		animating1.Stopped:Wait()
+
+		-- Second animation
+		local anim2 = loadAnimation("16944345619")
+		local animating2 = AnimHandler.new(Character, anim2)
+		animating2.Looped = false
+		animating2:Play(0.3)
+	end)
+
+	task.delay(Cooldown, function()
+		CanUse = true
+	end)
+end)
+
+-- Wait for Backpack to exist, then insert the Tool
+repeat task.wait() until Player:FindFirstChild("Backpack")
+Tool.Parent = Player.Backpack
+
+-- Tool 2: Collateral Ruins
+local Collateral = Instance.new("Tool")
+Collateral.Name = "Collateral Ruins"
+Collateral.RequiresHandle = false
+Collateral.Parent = player.Backpack
+
+local Cooldown2 = false
+
+Collateral.Equipped:Connect(function()
+if Cooldown2 then return end
+Cooldown2 = true
+
+local Character = player.Character or player.CharacterAdded:Wait()  
+local HRP = Character:FindFirstChild("HumanoidRootPart")  
+if not HRP then Cooldown2 = false return end  
+
+local function AnchorCharacter(state) HRP.Anchored = state end  
+local function StopAnimations()  
+    for _, track in pairs(Character.Humanoid:GetPlayingAnimationTracks()) do  
+        track:Stop()  
+    end  
+end  
+
+StopAnimations()  
+AnchorCharacter(true)  
+
+-- Play animation  
+local Anim = game:GetObjects("rbxassetid://17325254223")[1]  
+Anim.Parent = Character  
+local Play = AnimHandler.new(Character, Anim)  
+Play:Play()  
+Play.Looped = false  
+Play.Stopped:Wait()  
+
+AnchorCharacter(false)  
+createEffect(HRP.CFrame)  
+
+task.wait(1)  
+Cooldown2 = false
+
+end)
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+-- Load animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Function to load animation
+local function loadAnimation(id)
+	local animObj = game:GetObjects("rbxassetid://" .. id)[1]
+	animObj.Name = "TempAnim"
+	animObj.Parent = Character
+	return animObj
+end
+
+-- Create Tool
+local Tool = Instance.new("Tool")
+Tool.Name = "Counter"
+Tool.RequiresHandle = false
+Tool.CanBeDropped = false
+
+-- Cooldown settings
+local Cooldown = 4
+local CanUse = true
+
+-- Tool activation behavior
+Tool.Activated:Connect(function()
+	if not CanUse then return end
+	CanUse = false
+
+	task.spawn(function()
+		-- Start-up counter animation
+		local anim1 = loadAnimation("78521642007560")
+		local animating1 = AnimHandler.new(Character, anim1)
+		animating1.Looped = false
+		animating1:Play(0.3)
+		animating1.Stopped:Wait()
+
+		-- Punch counter animation
+		local anim2 = loadAnimation("70512853043908")
+		local animating2 = AnimHandler.new(Character, anim2)
+		animating2.Looped = false
+		animating2:Play(0.3)
+		animating2.Stopped:Wait()
+
+		-- Swing counter animation
+		local anim3 = loadAnimation("81827172076105")
+		local animating3 = AnimHandler.new(Character, anim3)
+		animating3.Looped = false
+		animating3:Play(0.3)
+		animating3.Stopped:Wait()
+
+		-- Cleanup: remove temp animations
+		for _, obj in ipairs(Character:GetChildren()) do
+			if obj:IsA("Animation") and obj.Name == "TempAnim" then
+				obj:Destroy()
+			end
+		end
+	end)
+
+	-- Reset cooldown
+	task.delay(Cooldown, function()
+		CanUse = true
+	end)
+end)
+
+-- Wait for Backpack to exist, then insert the Tool
+repeat task.wait() until Player:FindFirstChild("Backpack")
+Tool.Parent = Player.Backpack
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+-- Load animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Function to load animation
+local function loadAnimation(id)
+	local animObj = game:GetObjects("rbxassetid://" .. id)[1]
+	animObj.Name = "TempAnim"
+	animObj.Parent = Character
+	return animObj
+end
+
+-- Create Tool
+local Tool = Instance.new("Tool")
+Tool.Name = "5 Seasons"
+Tool.RequiresHandle = false
+Tool.CanBeDropped = false
+
+-- Cooldown settings
+local Cooldown = 4
+local CanUse = true
+
+-- Tool activation behavior
+Tool.Activated:Connect(function()
+	if not CanUse then return end
+	CanUse = false
+
+	task.spawn(function()
+		-- First animation
+		local anim1 = loadAnimation("18462892217")
+		local animating1 = AnimHandler.new(Character, anim1)
+		animating1.Looped = false
+		animating1:Play(0.3)
+		animating1.Stopped:Wait()
+
+		-- Delay before second animation
+		task.wait(3)
+
+		-- Second animation
+		local anim2 = loadAnimation("180436148")
+		local animating2 = AnimHandler.new(Character, anim2)
+		animating2.Looped = false
+		animating2:Play(0.3)
+		animating2.Stopped:Wait()
+
+		-- Cleanup temp animations
+		for _, obj in ipairs(Character:GetChildren()) do
+			if obj:IsA("Animation") and obj.Name == "TempAnim" then
+				obj:Destroy()
+			end
+		end
+	end)
+
+	-- Reset cooldown
+	task.delay(Cooldown, function()
+		CanUse = true
+	end)
+end)
+
+-- Wait for Backpack to exist, then insert the Tool
+repeat task.wait() until Player:FindFirstChild("Backpack")
+Tool.Parent = Player.Backpack
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+-- Load animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Function to load animation
+local function loadAnimation(id)
+	local animObj = game:GetObjects("rbxassetid://" .. id)[1]
+	animObj.Name = "TempAnim"
+	animObj.Parent = Character
+	return animObj
+end
+
+-- Create Tool
+local Tool = Instance.new("Tool")
+Tool.Name = "Unlimited Flexworks"
+Tool.RequiresHandle = false
+Tool.CanBeDropped = false
+
+-- Cooldown settings
+local Cooldown = 4
+local CanUse = true
+
+-- Tool activation behavior
+Tool.Activated:Connect(function()
+	if not CanUse then return end
+	CanUse = false
+
+	task.spawn(function()
+		-- Single animation play
+		local anim = loadAnimation("18659226833")
+		local animating = AnimHandler.new(Character, anim)
+		animating.Looped = false
+		animating:Play(0.3)
+		animating.Stopped:Wait()
+
+		-- Cleanup temp animation
+		for _, obj in ipairs(Character:GetChildren()) do
+			if obj:IsA("Animation") and obj.Name == "TempAnim" then
+				obj:Destroy()
+			end
+		end
+	end)
+
+	-- Reset cooldown
+	task.delay(Cooldown, function()
+		CanUse = true
+	end)
+end)
+
+-- Wait for Backpack to exist, then insert the Tool
+repeat task.wait() until Player:FindFirstChild("Backpack")
+Tool.Parent = Player.Backpack
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+-- Load animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Function to load animation
+local function loadAnimation(id)
+	local animObj = game:GetObjects("rbxassetid://" .. id)[1]
+	animObj.Name = "TempAnim"
+	animObj.Parent = Character
+	return animObj
+end
+
+-- Create Tool
+local Tool = Instance.new("Tool")
+Tool.Name = "Stoic bomb"
+Tool.RequiresHandle = false
+Tool.CanBeDropped = false
+
+-- Cooldown settings
+local Cooldown = 4
+local CanUse = true
+
+-- Tool activation behavior
+Tool.Activated:Connect(function()
+	if not CanUse then return end
+	CanUse = false
+
+	task.spawn(function()
+		-- Single animation play
+		local anim = loadAnimation("17141153099")
+		local animating = AnimHandler.new(Character, anim)
+		animating.Looped = false
+		animating:Play(0.3)
+		animating.Stopped:Wait()
+
+		-- Cleanup temp animation
+		for _, obj in ipairs(Character:GetChildren()) do
+			if obj:IsA("Animation") and obj.Name == "TempAnim" then
+				obj:Destroy()
+			end
+		end
+	end)
+
+	-- Reset cooldown
+	task.delay(Cooldown, function()
+		CanUse = true
+	end)
+end)
+
+repeat task.wait() until Player:FindFirstChild("Backpack")
+Tool.Parent = Player.Backpack
