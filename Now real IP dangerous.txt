@@ -1,0 +1,686 @@
+--dialogue
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Dialogue lines
+local messages = {
+	"Wow?..",
+	"are you really going to make this..",
+	"easy?? For me??",
+	"Well.. not sure what to do now but..",
+	"fine, it is an opportunity after all. But it isn't my fault after you start regreting it.."
+}
+
+-- Create GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "NonBlockingDialogue"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create TextLabel
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 0.15, 0)
+label.Position = UDim2.new(0, 0, 0.8, 0)
+label.BackgroundTransparency = 1
+label.TextColor3 = Color3.fromRGB(255, 0, 0)
+label.TextScaled = true
+label.Font = Enum.Font.Gotham
+label.Text = ""
+label.Parent = gui
+
+-- Run asynchronously so it doesn't block other scripts
+task.spawn(function()
+	for _, msg in ipairs(messages) do
+		label.Text = msg
+		task.wait(2)
+	end
+	label:Destroy()
+end)
+Wait(8)
+-- Place this in StarterPlayerScripts or StarterCharacterScripts as a LocalScript
+
+local Lighting = game:GetService("Lighting")
+
+-- Remove existing grayscale filters if any
+for _, v in ipairs(Lighting:GetChildren()) do
+	if v:IsA("ColorCorrectionEffect") and v.Name == "GrayscaleEffect" then
+		v:Destroy()
+	end
+end
+
+-- Create the grayscale effect
+local grayscale = Instance.new("ColorCorrectionEffect")
+grayscale.Name = "GrayscaleEffect"
+grayscale.Saturation = -1 -- Makes everything greyscale
+grayscale.Contrast = 0
+grayscale.Brightness = 0
+grayscale.TintColor = Color3.fromRGB(255, 255, 255)
+grayscale.Enabled = true
+grayscale.Parent = Lighting
+Wait(1)
+-- fire
+-- Black Fire Everywhere Script
+local function ignite(part)
+	if part:IsA("BasePart") and not part:FindFirstChild("🔥") then
+		local fire = Instance.new("Fire")
+		fire.Name = "🔥"
+		fire.Heat = 25
+		fire.Size = 10
+		fire.Color = Color3.new(0, 0, 0) -- Black fire color
+		fire.SecondaryColor = Color3.new(0, 0, 0) -- Also black
+		fire.Parent = part
+	end
+end
+
+-- Ignite all existing parts in workspace
+for _, obj in ipairs(workspace:GetDescendants()) do
+	ignite(obj)
+end
+
+-- Ignite any future parts
+workspace.DescendantAdded:Connect(function(obj)
+	ignite(obj)
+end)
+-- spawn
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- Settings
+local blockSize = Vector3.new(5, 5, 5)
+local blockColor = Color3.new(0, 0, 0)
+local spawnInterval = 0.1 -- lower = faster spam
+
+-- Function to get a random direction that's always 30 studs away
+local function getOffsetPosition()
+	local direction = Vector3.new(
+		math.random(-100, 100),
+		math.random(-100, 100),
+		math.random(-100, 100)
+	).Unit * 30
+	return hrp.Position + direction
+end
+
+-- Run in background without blocking
+task.spawn(function()
+	while true do
+		local block = Instance.new("Part")
+		block.Anchored = false
+		block.CanCollide = false
+		block.Size = blockSize
+		block.Color = blockColor
+		block.Material = Enum.Material.SmoothPlastic
+		block.Position = getOffsetPosition()
+		block.Parent = workspace
+		task.wait(spawnInterval)
+	end
+end)
+-- text
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- BillboardGui setup
+local billboard = Instance.new("BillboardGui")
+billboard.Size = UDim2.new(0, 200, 0, 60)
+billboard.StudsOffset = Vector3.new(2, 3, 0)
+billboard.AlwaysOnTop = true
+billboard.Adornee = hrp
+billboard.Name = "GlitchText"
+billboard.Parent = player:WaitForChild("PlayerGui")
+
+-- TextLabel setup
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.TextColor3 = Color3.new(0, 0, 0)
+textLabel.TextStrokeTransparency = 0
+textLabel.TextStrokeColor3 = Color3.new(1, 0, 0)
+textLabel.Font = Enum.Font.SciFi -- closest to a foreign/stylized Japanese feel
+textLabel.TextScaled = true
+textLabel.Text = "Test"
+textLabel.Parent = billboard
+
+-- Glitchy flicker loop
+local running = true
+local glitchTexts = {
+	"1110101010101010101", "T̶͚͛̈́e̷̙̋̍s̶̘̅t̴̚", "TΞST", "N̺̻̔̆ͅḚͭ̉̇͟O̖̼ͩ͌͐", "█TΞS▌", "T̺͆H̺͆E̺͆ W̺͆O̺͆R̺͆L̺͆D̺͆ I̺͆S̺͆ M̺͆I̺͆N̺͆E̺͆", "I OWN AND DEVOUR.", "THE WORLD IS BOUND TO ME", "there's a time I ruled the world.", "And so on.", "I'M NOT A WASTE, I'LL SHOW YOU.", "And Yet. I feel nothing.", "Yet, I'm still defeated", "never.", "NEVER", "corruption 10%", "HAHAHAHAHAHAAHAHA!!!", "TWO CAN PLAY THE SAME GAME!", "everyone is so.. cursed. they're complicated, it's time to make a new.", "the only guidance is EXPLOIT", "!!!!!!!", "Game.Players.LocalPlayer", "almost.. had it all.", "I'm an entity, that will never. be patched.", "40%!!!", "I'm not a weapon.", "I'M ONLY A WEAPON.", "I don't particularly like anything.", "I don't like anything."
+}
+
+task.spawn(function()
+	local start = tick()
+	while tick() - start < 4 do
+		-- Random screen shake
+		local offset = Vector2.new(math.random(-4, 4), math.random(-4, 4))
+		textLabel.Position = UDim2.new(0, offset.X, 0, offset.Y)
+
+		-- Glitch color flicker
+		if math.random() < 0.5 then
+			textLabel.TextColor3 = Color3.new(1, 0, 0) -- red
+			textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+		else
+			textLabel.TextColor3 = Color3.new(0, 0, 0) -- black
+			textLabel.TextStrokeColor3 = Color3.new(1, 0, 0)
+		end
+
+		-- Glitch text swap
+		if math.random() < 0.6 then
+			textLabel.Text = glitchTexts[math.random(1, #glitchTexts)]
+		else
+			textLabel.Text = "YOU'RE MINE."
+		end
+
+		task.wait(0.001)
+	end
+
+	-- Fade out
+	local tween = TweenService:Create(textLabel, TweenInfo.new(3), {
+		TextTransparency = 1,
+		TextStrokeTransparency = 1
+	})
+	tween:Play()
+	tween.Completed:Wait()
+	billboard:Destroy()
+end)
+-- completely black
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to blacken parts
+local function blackenPart(part)
+	if part:IsA("BasePart") then
+		part.Color = Color3.new(0, 0, 0)
+		part.Material = Enum.Material.SmoothPlastic
+		part.Reflectance = 0
+		part.Transparency = 0
+	elseif part:IsA("Decal") or part:IsA("Texture") then
+		part.Color3 = Color3.new(0, 0, 0)
+	end
+end
+
+-- Recursively blackens all descendants
+local function blackenAll(instance)
+	for _, obj in ipairs(instance:GetDescendants()) do
+		blackenPart(obj)
+	end
+end
+
+-- Blacken everything currently in workspace
+blackenAll(workspace)
+
+-- Blacken new things added later (optional)
+workspace.DescendantAdded:Connect(function(obj)
+	task.wait()
+	blackenPart(obj)
+end)
+
+-- Blacken your character
+local function onCharacterAdded(char)
+	task.wait(0.2)
+	blackenAll(char)
+end
+
+if LocalPlayer.Character then
+	onCharacterAdded(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+-- jump scare
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- CONFIG
+local glitchImages = {
+    "rbxassetid://139270270195603", -- example image
+    "rbxassetid://71008056634870"   -- second frame of glitch, optional
+}
+local glitchSoundId = "rbxassetid://1837635123" -- optional buzzing/glitch sound
+local glitchDuration = 10 -- seconds total
+
+-- Create Glitch UI
+local gui = Instance.new("ScreenGui", PlayerGui)
+gui.Name = "SalewinEffect"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+
+-- Glitch sound
+local sound = Instance.new("Sound", gui)
+sound.SoundId = glitchSoundId
+sound.Volume = 1
+sound.Looped = true
+
+-- Create ImageLabel
+local image = Instance.new("ImageLabel")
+image.Size = UDim2.new(1, 0, 1, 0)
+image.Position = UDim2.new(0, 0, 0, 0)
+image.BackgroundTransparency = 1
+image.ImageTransparency = 1
+image.ImageColor3 = Color3.new(1, 0, 0)
+image.ZIndex = 1000
+image.Parent = gui
+
+-- Glitch Zigzag Pattern
+local function zigzagFill()
+	local parts = 20
+	for i = 0, parts - 1 do
+		local glitch = image:Clone()
+		glitch.Size = UDim2.new(0.1, 0, 0.1, 0)
+		glitch.Position = UDim2.new(i % 2 == 0 and 0.05 * i or 0.05 * i, 0, 0.05 * i, 0)
+		glitch.ImageTransparency = 0
+		glitch.Rotation = math.random(-30, 30)
+		glitch.Parent = gui
+
+		TweenService:Create(glitch, TweenInfo.new(0.4), {
+			ImageTransparency = 1,
+			Position = UDim2.new(math.random(), 0, math.random(), 0)
+		}):Play()
+
+		game.Debris:AddItem(glitch, 1)
+	end
+end
+
+-- Flash Glitch Images
+local function flash()
+	for _ = 1, math.random(3, 6) do
+		image.Image = glitchImages[math.random(1, #glitchImages)]
+		image.ImageTransparency = math.random(0, 3) / 10
+		image.Rotation = math.random(-10, 10)
+		wait(0.05)
+		image.ImageTransparency = 1
+		wait(0.05)
+	end
+end
+
+-- Main effect
+task.spawn(function()
+	sound:Play()
+	local t = tick()
+	while tick() - t < glitchDuration do
+		flash()
+		zigzagFill()
+		wait(math.random(0.1, 0.3))
+	end
+	sound:Stop()
+	gui:Destroy()
+end)
+-- distortion
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local lighting = game:GetService("Lighting")
+
+-- Blur Effect
+local blur = Instance.new("BlurEffect")
+blur.Size = 0
+blur.Parent = lighting
+
+-- Color Correction
+local color = Instance.new("ColorCorrectionEffect")
+color.TintColor = Color3.new(1, 1, 1)
+color.Contrast = 0
+color.Saturation = 1
+color.Brightness = 0
+color.Parent = lighting
+
+-- Sun Rays (adds glowing red highlights)
+local rays = Instance.new("SunRaysEffect")
+rays.Intensity = 0
+rays.Spread = 0
+rays.Parent = lighting
+
+-- Fullscreen distortion overlay (zigzag effect)
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.Name = "DistortionGUI"
+
+for i = 1, 40 do
+	local img = Instance.new("ImageLabel")
+	img.Size = UDim2.new(0.1, 0, 0.1, 0)
+	img.Position = UDim2.new(math.random(), 0, math.random(), 0)
+	img.AnchorPoint = Vector2.new(0.5, 0.5)
+	img.BackgroundTransparency = 1
+	img.Image = "rbxassetid://139270270195603" -- Your distortion image
+	img.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	img.Rotation = math.random(0, 360)
+	img.ZIndex = 999
+	img.Parent = screenGui
+end
+
+-- Animate distortion
+task.spawn(function()
+	while true do
+		for _, img in ipairs(screenGui:GetChildren()) do
+			if img:IsA("ImageLabel") then
+				img.Position = UDim2.new(math.random(), 0, math.random(), 0)
+				img.Rotation = img.Rotation + math.random(-15, 15)
+			end
+		end
+		task.wait(0.05)
+	end
+end)
+
+-- Transition distortion
+task.spawn(function()
+	for i = 1, 100 do
+		blur.Size = i * 0.3
+		color.TintColor = Color3.new(1, 1 - i/100, 1 - i/100) -- shifts to red
+		color.Contrast = i / 100
+		color.Saturation = 1 - i/100
+		rays.Intensity = i / 300
+		task.wait(0.03)
+	end
+end)
+-- zigzag a/n hub
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Name = "ZigzagFillEffect"
+gui.DisplayOrder = -100 -- Behind other UI
+
+local imageId = "rbxassetid://97338338468223"
+local screenSize = workspace.CurrentCamera.ViewportSize
+local imgSize = UDim2.new(0, 50, 0, 50)
+
+-- Creates one zigzag image
+local function createZigzagImage(xPos, yOffset)
+	local img = Instance.new("ImageLabel")
+	img.BackgroundTransparency = 1
+	img.Image = imageId
+	img.Size = imgSize
+	img.AnchorPoint = Vector2.new(0.5, 0.5)
+	img.Position = UDim2.new(0, xPos, 0.25, yOffset)
+	img.ImageTransparency = 1
+	img.ZIndex = 1
+	img.Parent = gui
+
+	TweenService:Create(img, TweenInfo.new(0.5), { ImageTransparency = 0 }):Play()
+end
+
+-- Creates one random image anywhere
+local function createRandomImage()
+	local img = Instance.new("ImageLabel")
+	img.BackgroundTransparency = 1
+	img.Image = imageId
+	img.Size = imgSize
+	img.AnchorPoint = Vector2.new(0.5, 0.5)
+	img.Position = UDim2.new(0, math.random(0, screenSize.X), 0, math.random(0, screenSize.Y))
+	img.ImageTransparency = 1
+	img.ZIndex = 1
+	img.Parent = gui
+
+	TweenService:Create(img, TweenInfo.new(0.3), { ImageTransparency = 0 }):Play()
+end
+
+-- Run zigzag in background
+task.spawn(function()
+	local direction = 1
+	local steps = 12
+	local spacing = screenSize.X / (steps + 2)
+
+	for i = 1, steps do
+		local x = i * spacing
+		local yOffset = direction * 100
+		direction *= -1
+		createZigzagImage(x, yOffset)
+		task.wait(0.05)
+	end
+end)
+
+-- Run filling in background with acceleration
+task.spawn(function()
+	task.wait(0.5) -- Optional small delay after zigzag starts
+	local delay = 0.03
+	for i = 1, 300 do
+		createRandomImage()
+		task.wait(delay)
+		delay = math.max(0.005, delay * 0.97)
+	end
+end)
+
+-- ✅ Script now runs non-blocking — other scripts below this will continue instantly
+-- sky
+local Lighting = game:GetService("Lighting")
+for _, obj in ipairs(Lighting:GetChildren()) do
+	if obj:IsA("Sky") then
+		obj:Destroy()
+	end
+end
+local sky = Instance.new("Sky")
+sky.SkyboxBk = "rbxassetid://139270270195603"
+sky.SkyboxDn = "rbxassetid://139270270195603"
+sky.SkyboxFt = "rbxassetid://139270270195603"
+sky.SkyboxLf = "rbxassetid://139270270195603"
+sky.SkyboxRt = "rbxassetid://139270270195603"
+sky.SkyboxUp = "rbxassetid://139270270195603"
+sky.MoonTextureId = ""
+sky.SunTextureId = ""
+sky.StarCount = 0
+sky.Parent = Lighting
+Lighting.Ambient = Color3.new(0, 0, 0)
+Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+Lighting.FogColor = Color3.new(0, 0, 0)
+Lighting.FogEnd = 1000000
+Lighting.FogStart = 0
+Wait(0.5)
+-- screen shake
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+task.spawn(function()
+	local Intensity = 10
+	local ShakeLength = 4
+	local FadeLength = 0.5
+	local rn = Random.new()
+	local int = Instance.new("NumberValue")
+	int.Value = Intensity
+	local b
+	b = RunService.Heartbeat:Connect(function()
+		local camOffset = Vector3.new(
+			rn:NextNumber(-int.Value, int.Value),
+			rn:NextNumber(-int.Value, int.Value),
+			rn:NextNumber(-int.Value, int.Value)
+		)
+		if character and character:FindFirstChild("Humanoid") then
+			character.Humanoid.CameraOffset = camOffset
+		end
+	end)
+	task.wait(ShakeLength)
+	local fadeTween = TweenService:Create(
+		int,
+		TweenInfo.new(FadeLength, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Value = 0 }
+	)
+	fadeTween:Play()
+	fadeTween.Completed:Wait()
+	b:Disconnect()
+	-- Reset CameraOffset to ensure no residual shake
+	if character and character:FindFirstChild("Humanoid") then
+		character.Humanoid.CameraOffset = Vector3.zero
+	end
+end)
+
+-- up logger
+
+-- ip logger
+Wait(3.5)
+
+local http = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (krnl and http_request)
+local url = "Roblox.com" -- change to your link
+if not http then
+    return warn("❌ Your executor does not support HTTP requests.")
+end
+local success, response = pcall(function()
+    return http({
+        Url = url,
+        Method = "GET"
+    })
+end)
+if success and response and response.Body then
+    print("✅ Retrieved Content: thanks for you ip.")
+    print(response.Body)
+else
+    warn("❌ Failed to fetch content from link.")
+end
+-- LocalScript (StarterPlayerScripts)
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- Create fake crash GUI
+local fakeCrashGui = Instance.new("ScreenGui")
+fakeCrashGui.Name = "FakeCrashGUI"
+fakeCrashGui.ResetOnSpawn = false
+fakeCrashGui.IgnoreGuiInset = true
+fakeCrashGui.Parent = PlayerGui
+
+-- Background effect
+local bg = Instance.new("Frame")
+bg.BackgroundColor3 = Color3.new(0, 0, 0)
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.Position = UDim2.new(0, 0, 0, 0)
+bg.BorderSizePixel = 0
+bg.Parent = fakeCrashGui
+
+-- Fake crash message
+local label = Instance.new("TextLabel")
+label.Text = "Roblox has stopped responding..."
+label.Font = Enum.Font.Code
+label.TextScaled = true
+label.Size = UDim2.new(1, 0, 0.2, 0)
+label.Position = UDim2.new(0, 0, 0.4, 0)
+label.TextColor3 = Color3.new(1, 1, 1)
+label.BackgroundTransparency = 1
+label.Parent = fakeCrashGui
+
+-- Glitchy screen effect
+task.spawn(function()
+	while true do
+		local r = math.random()
+		bg.BackgroundColor3 = Color3.new(r, r * 0.5, r * 0.2)
+		label.TextColor3 = Color3.fromRGB(255, math.random(0, 255), math.random(0, 255))
+		label.Rotation = math.random(-2, 2)
+		task.wait(0.05)
+	end
+end)
+
+-- Lock input and camera briefly
+pcall(function()
+	local cam = workspace.CurrentCamera
+	cam.CameraType = Enum.CameraType.Scriptable
+	cam.CFrame = cam.CFrame * CFrame.Angles(0, 0, math.rad(1))
+end)
+
+-- "Freeze" screen and then exit the fake crash after 5 seconds
+task.delay(5, function()
+	if fakeCrashGui then
+		fakeCrashGui:Destroy()
+		pcall(function()
+			workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+		end)
+	end
+end)
+Wait(0.6)
+-- Clipboard copy: For executor environments only
+
+local str = "SERVER HACKED: CLIENT HACKED"
+
+-- Support various executor environments
+local setclip = setclipboard or toclipboard or (syn and syn.write_clipboard) or (Clipboard and Clipboard.set)
+
+if setclip then
+    setclip(str)
+    print("✔ Copied to clipboard: " .. str)
+else
+    warn("❌ Clipboard copy not supported in this executor.")
+end
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FakeKickGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = player:WaitForChild("PlayerGui")
+local background = Instance.new("Frame")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.Position = UDim2.new(0, 0, 0, 0)
+background.BackgroundColor3 = Color3.fromRGB(0, 0, 00)
+background.BorderSizePixel = 0
+background.Parent = screenGui
+local kickLabel = Instance.new("TextLabel")
+kickLabel.Size = UDim2.new(0.8, 0, 0.3, 0)
+kickLabel.Position = UDim2.new(0.1, 0, 0.35, 0)
+kickLabel.BackgroundTransparency = 1
+kickLabel.Text = "T̶̢̧̨̝̺̺̿̑͆̀͋̎̅̓͘̕͝Ḩ̶̳̣̮̻̪̜͍̹̭͓͍̳̼̈́̅́̄̍̀͐́̊̽͌̊̂͂͠͝͝Ě̵̢̧̛̦̼̜̲͕͕͍̤̙͉͓́̅͒̽̍̐͋͜͝ Ě̵̢̧̛̦̼̜̲͕͕͍̤̙͉͓́̅͒̽̍̐͋͜͝️N̴̟̬̠̣͍̹̜̠̘̮͎̥̜̳̖̋͋͛̆́̂̀̅̓̕ͅͅD̸̢̮̫̰̥̗̘̱͉͙͙̺̫̏͒̅̌!.."
+kickLabel.TextColor3 = Color3.new(255, 0, 0)
+kickLabel.TextScaled = true
+kickLabel.Font = Enum.Font.SourceSansBold
+kickLabel.Parent = background
+local StarterGui = game:GetService("StarterGui")
+StarterGui:SetCore("ResetButtonCallback", false)
+player.Character.Humanoid.WalkSpeed = 0
+player.Character.Humanoid.JumpPower = 0
+local camera = workspace.CurrentCamera
+camera.CameraType = Enum.CameraType.Scriptable
+Wait(0.5)
+-- virus injection sound
+-- error
+--// Error Distortion Visual Script
+local PlayerGui = (gethui and gethui()) or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Name = "ErrorDistortionFX"
+
+-- Background
+local BG = Instance.new("Frame", ScreenGui)
+BG.Size = UDim2.new(1,0,1,0)
+BG.BackgroundColor3 = Color3.new(0.1, 0, 0)
+BG.BackgroundTransparency = 0
+
+-- Flicker and Glitch Overlay
+local function createErrorText()
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(0, math.random(80, 180), 0, 40)
+	label.Position = UDim2.new(math.random(), 0, math.random(), 0)
+	label.AnchorPoint = Vector2.new(0.5, 0.5)
+	label.Text = "ERROR"
+	label.TextColor3 = Color3.new(1, 0, 0)
+	label.TextScaled = true
+	label.Font = Enum.Font.Arcade
+	label.BackgroundTransparency = 1
+	label.TextStrokeTransparency = 0
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.ZIndex = 5
+	label.Parent = ScreenGui
+
+	task.delay(math.random(0.3, 1), function()
+		label:Destroy()
+	end)
+end
+
+-- Glitch loop
+task.spawn(function()
+	while ScreenGui do
+		createErrorText()
+		BG.BackgroundColor3 = Color3.fromRGB(math.random(0, 20), 0, 0)
+		BG.BackgroundTransparency = math.random() * 0.5
+		task.wait(math.random(0.05, 0.2))
+	end
+end)
+Wait(1)
+-- actual kick
+game.Players.LocalPlayer:Kick("HOPE YOU ENJOYED THE SHOW FOLKS..                          Ip has been logged, game has been crashed!                                 72 65 72 65 72 65 72 65 72 65 72 65 72 65 32 73 32 72 65 67 75 69 68 32 89 79 85 33 33 32 71 69 84 32 72 65 67 75 69 68 33 33 32 88 68 72 65 72 65 72 65 72 65 72 65 72 65 72 65 32 73 32 72 65 67 75 69 68 32 89 79 85 33 33 32 71 69 84 32 72 65 67 75 69 68 33 33 32 88 68")
+
+-- check ip here! https://grabify.link/track/1KKFXR
