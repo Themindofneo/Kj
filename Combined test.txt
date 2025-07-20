@@ -1,0 +1,446 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+humanoid.WalkSpeed = 0
+-- // OPTIONS
+local FacePlayer = true
+local TeleportToFront = true
+-- // SETTINGS
+local userId = 1494561843 -- Target user's ID
+local customName = "RidgePark_Noli"
+local cloneAnimationId = "rbxassetid://81523542573194" -- Animation for avatar clone
+local playerAnimationId = "rbxassetid://104958538275919" -- Animation for player
+local Offset = Vector3.new(0, 0, 3)
+local DestroyDelay = 9.5
+-- // SERVICES
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ChatService = game:GetService("Chat")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humRootPart = character:WaitForChild("HumanoidRootPart")
+-- // ANIM HANDLER
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+-- // MAIN WRAP
+task.spawn(function()
+	local function spawnAvatar()
+		local success, avatarModel = pcall(function()
+			return Players:CreateHumanoidModelFromUserId(userId)
+		end)
+		if success and avatarModel then
+			avatarModel.Name = customName
+			avatarModel.Parent = workspace
+			for _, part in ipairs(avatarModel:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+					part.Massless = true
+				end
+			end
+			local rootCFrame = humRootPart.CFrame
+			local spawnPosition = rootCFrame.Position
+			if TeleportToFront then
+				spawnPosition += rootCFrame.LookVector * Offset.Z
+			end
+			local finalCFrame = CFrame.new(spawnPosition)
+			if FacePlayer then
+				finalCFrame = CFrame.new(spawnPosition, humRootPart.Position)
+			end
+			avatarModel:PivotTo(finalCFrame)
+			task.delay(DestroyDelay, function()
+				if avatarModel then
+					avatarModel:Destroy()
+				end
+			end)
+			return avatarModel
+		else
+			warn("Failed to spawn avatar model.")
+		end
+	end
+	local function playAnimationOnModel(model, animationAssetId)
+		local humanoid = model:FindFirstChildWhichIsA("Humanoid")
+		if not humanoid then return end
+		local success, anim = pcall(function()
+			return game:GetObjects(animationAssetId)[1]
+		end)
+		if success and anim then
+			anim.Name = "CustomAnimation"
+			anim.Parent = model
+			local animating = AnimHandler.new(model, anim)
+			animating.Looped = false
+			animating:Play()
+		end
+	end
+	local function avatarChat(model, text)
+		local head = model:FindFirstChild("Head")
+		if head then
+			ChatService:Chat(head, text)
+		end
+	end
+	local avatarModel = spawnAvatar()
+	if avatarModel then
+		repeat RunService.Heartbeat:Wait()
+			avatarModel = workspace:FindFirstChild(customName)
+		until avatarModel and avatarModel:FindFirstChildWhichIsA("Humanoid")
+		-- // PLAY ANIMATIONS (AT SAME TIME)
+		playAnimationOnModel(avatarModel, cloneAnimationId)
+		playAnimationOnModel(character, playerAnimationId)
+		-- // CHAT
+		avatarChat(avatarModel, "Is that all you got?")
+
+local Text = "w-what the.."
+-- don't change anything here unless you know
+game:GetService("Chat"):Chat(game.Players.LocalPlayer.Character, Text)
+	end
+end)
+--// SETTINGS
+local cameraDuration = 9.7
+local transitionTime1 = 1.5
+local transitionTime2 = 3
+local transitionTime3 = 1.2
+local transitionTime4 = 1.2
+local finalWait = 0.5
+local blockColor = Color3.fromRGB(100, 100, 100)
+--// SERVICES
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+--// REFERENCES
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local camera = workspace.CurrentCamera
+-- Save original cam settings
+local originalCamType = camera.CameraType
+local originalCamCFrame = camera.CFrame
+-- Create camera block
+local block = Instance.new("Part")
+block.Size = Vector3.new(2, 2, 2)
+block.Anchored = true
+block.CanCollide = false
+block.Transparency = 0
+block.Color = blockColor
+block.Material = Enum.Material.SmoothPlastic
+block.Name = "CutsceneBlock"
+block.Parent = workspace
+
+-- START: 5 studs forward, 5 up, 3 right
+local frontOffset = hrp.CFrame.LookVector * 5
+local rightOffset = hrp.CFrame.RightVector * 3
+local startPos = hrp.Position + frontOffset + rightOffset + Vector3.new(0, 5, 0)
+block.Position = startPos
+
+-- CAMERA INIT
+camera.CameraType = Enum.CameraType.Scriptable
+camera.CFrame = CFrame.new(
+	block.Position,
+	hrp.Position + Vector3.new(0, 1.5, 0)
+)
+
+-- TWEEN 1: Front -> Left
+local leftOffset = -hrp.CFrame.RightVector * 5
+local leftPos = hrp.Position + leftOffset + Vector3.new(0, 1.5, 0)
+local tween1 = TweenService:Create(block, TweenInfo.new(transitionTime1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+	Position = leftPos
+})
+
+-- TWEEN 2: Left -> Back 20
+local backOffset = -hrp.CFrame.LookVector * 20
+local backPos = leftPos + backOffset
+local tween2 = TweenService:Create(block, TweenInfo.new(transitionTime2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+	Position = backPos
+})
+
+-- TWEEN 3: More back (30) and 1 right
+local moveMoreOffset = -hrp.CFrame.LookVector * 20 + hrp.CFrame.RightVector * 1
+local finalPos1 = backPos + moveMoreOffset
+local tween3 = TweenService:Create(block, TweenInfo.new(transitionTime3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+	Position = finalPos1
+})
+
+-- TWEEN 4: +10 right, +1 front
+local offset4 = hrp.CFrame.RightVector * 7 + hrp.CFrame.LookVector * 3
+local finalPos2 = finalPos1 + offset4
+local tween4 = TweenService:Create(block, TweenInfo.new(transitionTime4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+	Position = finalPos2
+})
+
+-- CAMERA FOLLOWING
+local running = true
+local updateConn = RunService.RenderStepped:Connect(function()
+	if running then
+		camera.CFrame = CFrame.new(
+			block.Position,
+			hrp.Position + Vector3.new(0, 1.5, 0)
+		)
+	end
+end)
+-- PLAYBACK SEQUENCE
+tween1:Play()
+tween1.Completed:Connect(function()
+	tween2:Play()
+	task.delay(transitionTime2 * 0.9, function()
+		tween3:Play()
+		tween3.Completed:Connect(function()
+			task.delay(finalWait, function()
+				tween4:Play()
+			end)
+		end)
+	end)
+end)
+-- FINAL CLEANUP
+task.delay(cameraDuration, function()
+	running = false
+	updateConn:Disconnect()
+	block:Destroy()
+	camera.CameraType = originalCamType
+	camera.CFrame = originalCamCFrame
+end)
+Wait(6.3)
+local Intensity = 0.45
+local ShakeLength = 2.5
+local FadeLength = 0.5
+
+-- Don't change anything below unless you know what you're doing
+coroutine.wrap(function()
+	local rn = Random.new()
+	local int = Instance.new("NumberValue")
+	int.Value = Intensity
+	local heartbeatConnection
+	heartbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+		local char = game.Players.LocalPlayer.Character
+		if char and char:FindFirstChild("Humanoid") then
+			char.Humanoid.CameraOffset = Vector3.new(
+				rn:NextNumber(-int.Value, int.Value),
+				rn:NextNumber(-int.Value, int.Value),
+				rn:NextNumber(-int.Value, int.Value)
+			)
+		end
+	end)
+	task.wait(ShakeLength)
+	local tween = game:GetService("TweenService"):Create(int, TweenInfo.new(FadeLength, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Value = 0})
+	tween:Play()
+	tween.Completed:Wait()
+	heartbeatConnection:Disconnect()
+end)()
+-- black flash
+task.spawn(function()
+	local assetId = "rbxassetid://70681471980871" -- test model
+	local player = game.Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humRootPart = character:WaitForChild("HumanoidRootPart")
+
+	--------------[setting]--------------
+	local MoveRight = 0
+	local MoveLeft = -1
+	local MoveUp = 0
+	local MoveDown = 18
+	local MoveForward = 0
+	local MoveBackward = -40
+	local DestroyDelay = 2.2
+
+	-- Position offset relative to look direction
+	local Offset = Vector3.new(
+		MoveRight - MoveLeft,
+		MoveUp - MoveDown,
+		MoveForward - MoveBackward
+	)
+
+	---[don't touch anything here if you don't know what you're doing.]---
+	local objects = game:GetObjects(assetId)
+	if #objects > 0 then
+		local model = objects[1]
+		model.Parent = workspace
+		if model:IsA("Model") then
+			if not model.PrimaryPart then
+				local primary = model:FindFirstChildWhichIsA("BasePart")
+				if primary then
+					model.PrimaryPart = primary
+				end
+			end
+			for _, part in ipairs(model:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+					part.Massless = true
+				end
+			end
+			if model.PrimaryPart then
+				local rootCFrame = humRootPart.CFrame
+				local lookVector = rootCFrame.LookVector
+				local spawnCFrame = rootCFrame + rootCFrame:VectorToWorldSpace(Offset)
+				local facingRotation = CFrame.new(Vector3.zero, lookVector)	model:SetPrimaryPartCFrame(CFrame.new(spawnCFrame.Position) * facingRotation)
+			end
+			task.delay(DestroyDelay, function()
+				if model then
+					model:Destroy()
+				end
+			end)
+		end
+	end
+end)
+wait(2)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local function makeInvisible(char)
+	for _, v in pairs(char:GetDescendants()) do
+		if v:IsA("BasePart") or v:IsA("MeshPart") then
+			if v.Name ~= "HumanoidRootPart" then
+				v.Transparency = 1
+			end
+		end
+		if v:IsA("Decal") then
+			v.Transparency = 1
+		end
+	end
+end
+local function makeVisible(char)
+	for _, v in pairs(char:GetDescendants()) do
+		if v:IsA("BasePart") or v:IsA("MeshPart") then
+			if v.Name ~= "HumanoidRootPart" then
+				v.Transparency = 0
+			end
+		end
+		if v:IsA("Decal") then
+			v.Transparency = 0
+		end
+	end
+end
+local function onCharacterAdded(char)
+	makeInvisible(char)
+	print(LocalPlayer.Name .. "'s character is invisible")
+	task.wait(1.5)
+	makeVisible(char)
+	print(LocalPlayer.Name .. "'s character is visible again")
+end
+if LocalPlayer.Character then
+	onCharacterAdded(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+local player = game.Players.LocalPlayer
+local function enableMovement(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	humanoid.WalkSpeed = 16
+end
+if player.Character then
+	enableMovement(player.Character)
+end
+player.CharacterAdded:Connect(enableMovement)
+
+
+---- fight two
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- Wait until character loads
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- Calculate 40 studs backward based on current orientation
+local backOffset = hrp.CFrame.LookVector * -50
+local newPosition = hrp.Position + backOffset
+
+-- Teleport without changing orientation
+hrp.CFrame = CFrame.new(newPosition) * CFrame.Angles(0, hrp.Orientation.Y * math.pi / 180, 0)
+-- load fight 2
+--// SETTINGS
+local totalBackDistance = 175
+local tweenDuration = 3.5
+local swayAmount = 1
+local swaySpeed = 6 -- how fast it sways (oscillates)
+local holdTime = 2
+local blockColor = Color3.fromRGB(100, 100, 100)
+
+--// SERVICES
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+--// REFERENCES
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local camera = workspace.CurrentCamera
+
+-- Save original camera state
+local originalCamType = camera.CameraType
+local originalCamCFrame = camera.CFrame
+
+-- Create camera block
+local block = Instance.new("Part")
+block.Size = Vector3.new(2, 2, 2)
+block.Anchored = true
+block.CanCollide = false
+block.Transparency = 1
+block.Color = blockColor
+block.Name = "BackCamBlock"
+block.Parent = workspace
+
+-- Start position: directly behind player (0.1 studs to not clip inside)
+local backStart = hrp.Position - hrp.CFrame.LookVector * 0.1 + Vector3.new(0, 1.5, 0)
+block.Position = backStart
+
+-- Tween goal: 50 studs backward
+local finalBackPos = hrp.Position - hrp.CFrame.LookVector * totalBackDistance + Vector3.new(0, 1.5, 0)
+
+local tween = TweenService:Create(block, TweenInfo.new(tweenDuration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+	Position = finalBackPos
+})
+
+-- Camera follow and sway
+local startTime = tick()
+local running = true
+local updateConn = RunService.RenderStepped:Connect(function()
+	if not running then return end
+
+	local elapsed = tick() - startTime
+	local sway = math.sin(elapsed * swaySpeed) * swayAmount
+	local swayOffset = hrp.CFrame.RightVector * sway
+
+	camera.CameraType = Enum.CameraType.Scriptable
+	camera.CFrame = CFrame.new(
+		block.Position + swayOffset,
+		hrp.Position + Vector3.new(0, 1.5, 0)
+	)
+end)
+
+-- Start tween
+tween:Play()
+
+-- Cleanup after tween + hold time
+task.delay(tweenDuration + holdTime, function()
+	running = false
+	updateConn:Disconnect()
+	block:Destroy()
+	camera.CameraType = originalCamType
+	camera.CFrame = originalCamCFrame
+end)
+
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+-- Load animation handler
+local AnimHandler = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProudNamed/SuperLightning/refs/heads/main/AnimModule/MainModule"))()
+
+-- Load animation
+local AnimId = game:GetObjects("rbxassetid://17363256069")[1]
+AnimId.Parent = Character
+
+-- Setup animation
+local Animating = AnimHandler.new(Character, AnimId)
+Animating.Looped = false
+
+-- Settings
+local fadeTime = 0.2
+local speed = 1.3
+local timePosition = 0.1
+
+-- Play animation with settings
+Animating:Play(fadeTime)
+Animating:AdjustSpeed(speed)
+Animating.TimePosition = timePosition
+
+-- Stop after 3 seconds
+task.delay(3, function()
+    Animating:Stop(fadeTime)
+end)
