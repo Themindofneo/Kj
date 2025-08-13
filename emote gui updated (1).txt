@@ -1,0 +1,735 @@
+local players = game:GetService("Players")
+local tweenService = game:GetService("TweenService")
+local userInputService = game:GetService("UserInputService")
+
+local player = players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local animations = {
+    ["dance"] = {
+        {name = "electro shuffle", id = "103948800984170"},
+        {name = "arm wiggle", id = "70602479049348"},
+        {name = "jumpstyle", id = "93792556735639"},
+        {name = "spongebob", id = "99750566769081"},
+        {name = "default dance", id = "83587512254200"},
+        {name = "rat dance", id = "73537985209926"},
+        {name = "dance 8", id = "113828222293972"},
+        {name = "dance 9", id = "76205458670806"},
+        {name = "dance 11", id = "87539936093366"},
+        {name = "dance if ur peak", id = "75543443460768"},
+        {name = "dance 13", id = "140315159513795"},
+        {name = "parrot dance", id = "101810746304426"},
+        {name = "dance 15", id = "100114227897992"},
+        {name = "druski dance", id = "128158748324403"},
+        {name = "garry's mod dance", id = "124896171012585"},
+        {name = "ishowspeed", id = "77171661847058"},
+        {name = "snoopdog", id = "107759404982778"},
+        {name = "pickle rick", id = "71911684622445"},
+        {name = "Dia Delicia", id = "137289759833149"},
+        {name = "Prince of Egypt", id = "139658061151500"},
+        {name = "Nae Nae Dance", id = "85277993651524"},
+        {name = "Moongazer Dance", id = "136678969396091"},
+        {name = "Still into you Dance", id = "88731999986983"},
+        {name = "Soda pop Dance", id = "105091666115616"},
+        {name = "Know you watch my sh#t", id = "119737281881349"},
+        {name = "griddy", id = "121966805049108"},
+        {name = "blue shirt guy", id = "113993454511338"},
+        {name = "california", id = "124982597491660"},
+        {name = "so sinister", id = "131758838511368"},
+        {name = "xavier", id = "111079103818250"},
+        {name = "da hood dance", id = "99904443000459"},
+        {name = "pennywise", id = "90424751150157"},
+        {name = "worm dance", id = "110309913045541"}
+    },
+    ["actions"] = {
+        {name = "sit", id = "112315797390498"},
+        {name = "cute sit", id = "130995344283026"},
+        {name = "sit scared", id = "85839328696428"},
+        {name = "squat", id = "87350387256948"},
+        {name = "wall lean", id = "134579200037442"},
+        {name = "minecraft", id = "111783757357767"},
+        {name = "head balance", id = "86758017198034"},
+        {name = "feet kick", id = "115619217455701"},
+        {name = "thinking", id = "109984377994356"},
+        {name = "sobbing", id = "83825304569588"},
+        {name = "tweaking", id = "82165874393539", playbackSpeed = 3},
+        {name = "mew", id = "81713588317764"},
+        {name = "springtrapped", id = "102336549954106"},
+        {name = "hug", id = "89634365084537"},
+        {name = "Peter Dead", id = "106868595777831"},
+        {name = "Come at me", id = "84961998273178"},
+        {name = "obby", id = "115271469979987"}
+    },
+    ["magic"] = {
+        {name = "magic 1", id = "114882698424429"},
+        {name = "magic 2", id = "94566164803307"},
+        {name = "magic 3", id = "111675568919562"},
+        {name = "tornado", id = "135627891861045"},
+        {name = "magic 4", id = "72812111148290"},
+        {name = "magic 5", id = "125335277430843"},
+        {name = "magic 6", id = "109976550167775"},
+        {name = "magic 7", id = "98875369518971"}
+    },
+    ["building"] = {
+        {name = "turret", id = "106285296431715"},
+        {name = "tank", id = "94915612757079"},
+        {name = "tank2", id = "104141435510769"},
+        {name = "skibidi", id = "127154705636043"},
+        {name = "car", id = "120284439973140"},
+        {name = "car2", id = "115245341767944"},
+        {name = "car3", id = "138003068153218"},
+        {name = "car4", id = "116625361313832"},
+        {name = "car5", id = "116772752010894"},
+        {name = "car6", id = "127805235430271"},
+        {name = "car7", id = "134681712937413"},
+        {name = "car8", id = "113181071290859"},
+        {name = "car9", id = "81388785824317"},
+        {name = "helicopter", id = "95301257497525"}
+    },
+    ["animal"] = {
+        {name = "dog sit", id = "88956725199015"},
+        {name = "dog walk", id = "133747057485171"},
+        {name = "bark", id = "96094477073074"},
+        {name = "cat", id = "82862771383701"},
+        {name = "spinning cat", id = "135311171741053"},
+        {name = "zombie", id = "90806086002292"},
+        {name = "worm", id = "89105965353215"},
+        {name = "fish", id = "79075971527754"},
+        {name = "amongus", id = "115930440595398"},
+        {name = "headless and korblox", id = "102325931762962"},
+        {name = "monkey", id = "90572783402125"}
+    },
+    ["DEATH"] = {
+        {name = "r15 death no collusion", id = "126377740992659"},
+        {name = "death r15", id = "107031558363287"},
+        {name = "death", id = "79522271832470"},
+        {name = "kys", id = "112647495998630", playbackSpeed = 0.4},
+        {name = "Lego", id = "79757971761739"}
+    },
+    ["NSFW"] = {
+        {name = "laying", id = "110999989394629"},
+        {name = "bend over", id = "106588433502872", start = 1, playbackSpeed = 0},
+        {name = "blow", id = "110995172745549"},
+        {name = "handJob", id = "96221249937272"},
+        {name = "twerk", id = "136490740599725"},
+        {name = "fent pose", id = "127826032196727"},
+        {name = "fent2", id = "112914014284121", playbackSpeed = 0.4},
+        {name = "fuck you", id = "98289978017308"},
+        {name = "push up", id = "113889893443813"},
+        {name = "exposing everything", id = "102840777887514"},
+        {name = "jerking", id = "110425239892738", start = 0.9, stop = 2.5}
+    },
+    ["Anim Packs"] = {}
+}
+
+local favorites = {}
+local currentAnimation = nil
+local currentAnimationTrack = nil
+local animationTracks = {}
+local currentTab = "dance"
+local isMinimized = false
+local tabButtons = {}
+local animationConnection = nil
+local animButtons = {}
+
+local animPackActive = false
+local wallyButton = nil
+local idleTrack, runTrack
+local taskLoop = nil
+
+local EMPTY_STAR_EMOJI = "☆"
+local FULL_STAR_EMOJI = "⭐"
+
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AnimationGUI"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "mainFrame"
+mainFrame.Size = UDim2.new(0, 280, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -140, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = mainFrame
+
+local titleBar = Instance.new("Frame")
+titleBar.Name = "titleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 25)
+titleBar.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleBar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -120, 1, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "UGC Emotes"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 13
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+local favoritesButton = Instance.new("TextButton")
+favoritesButton.Name = "FavoritesButton"
+favoritesButton.Size = UDim2.new(0, 70, 0, 20)
+favoritesButton.Position = UDim2.new(1, -140, 0, 2.5)
+favoritesButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+favoritesButton.Text = "FAVOURITES"
+favoritesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+favoritesButton.TextSize = 11
+favoritesButton.Font = Enum.Font.GothamBold
+favoritesButton.BorderSizePixel = 0
+favoritesButton.Parent = titleBar
+
+local favCorner = Instance.new("UICorner")
+favCorner.CornerRadius = UDim.new(0, 3)
+favCorner.Parent = favoritesButton
+
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 20, 0, 20)
+minimizeButton.Position = UDim2.new(1, -65, 0, 2.5)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+minimizeButton.Text = "-"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.TextSize = 15
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.BorderSizePixel = 0
+minimizeButton.Parent = titleBar
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 3)
+minCorner.Parent = minimizeButton
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Position = UDim2.new(1, -40, 0, 2.5)
+closeButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+closeButton.Text = "×"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextSize = 13
+closeButton.Font = Enum.Font.GothamBold
+closeButton.BorderSizePixel = 0
+closeButton.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 3)
+closeCorner.Parent = closeButton
+
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "contentFrame"
+contentFrame.Size = UDim2.new(1, 0, 1, -25)
+contentFrame.Position = UDim2.new(0, 0, 0, 25)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
+local tabBar = Instance.new("ScrollingFrame")
+tabBar.Size = UDim2.new(1, -10, 0, 30)
+tabBar.Position = UDim2.new(0, 5, 0, 5)
+tabBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+tabBar.BorderSizePixel = 0
+tabBar.ScrollBarThickness = 0
+tabBar.ScrollingDirection = Enum.ScrollingDirection.X
+tabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabBar.Parent = contentFrame
+
+local tabCorner = Instance.new("UICorner")
+tabCorner.CornerRadius = UDim.new(0, 4)
+tabCorner.Parent = tabBar
+
+local tabLayout = Instance.new("UIListLayout")
+tabLayout.FillDirection = Enum.FillDirection.Horizontal
+tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabLayout.Padding = UDim.new(0, 2)
+tabLayout.Parent = tabBar
+
+local animFrame = Instance.new("ScrollingFrame")
+animFrame.Name = "animFrame"
+animFrame.Size = UDim2.new(1, -10, 1, -45)
+animFrame.Position = UDim2.new(0, 5, 0, 40)
+animFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+animFrame.BorderSizePixel = 0
+animFrame.ScrollBarThickness = 4
+animFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+animFrame.Parent = contentFrame
+
+local animCorner = Instance.new("UICorner")
+animCorner.CornerRadius = UDim.new(0, 4)
+animCorner.Parent = animFrame
+
+local animLayout = Instance.new("UIGridLayout")
+animLayout.SortOrder = Enum.SortOrder.LayoutOrder
+animLayout.CellSize = UDim2.new(0, 125, 0, 25)
+animLayout.CellPadding = UDim2.new(0, 3, 0, 3)
+animLayout.Parent = animFrame
+
+local function stopAnimPack()
+    if humanoid then
+        humanoid.WalkSpeed = 16
+    end
+    if idleTrack then idleTrack:Stop(0.35) end
+    if runTrack then runTrack:Stop(0.35) end
+    if taskLoop then task.cancel(taskLoop) end
+    idleTrack = nil
+    runTrack = nil
+end
+
+local function stopCurrentAnimation()
+    if currentAnimationTrack then
+        currentAnimationTrack:Stop()
+        currentAnimationTrack = nil
+    end
+    currentAnimation = nil
+    
+    if animationConnection then
+        animationConnection:Disconnect()
+        animationConnection = nil
+    end
+
+    stopAnimPack()
+end
+
+local function playAnimation(anim)
+    if animPackActive then
+        animPackActive = false
+        if wallyButton then
+            wallyButton.Text = "Wally West: OFF"
+            wallyButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+        end
+        stopAnimPack()
+    end
+    
+    local animationId = "rbxassetid://" .. anim.id
+    
+    local animation = Instance.new("Animation")
+    animation.AnimationId = animationId
+    currentAnimationTrack = humanoid:LoadAnimation(animation)
+    
+    currentAnimationTrack.Looped = false
+    currentAnimationTrack.Priority = Enum.AnimationPriority.Action
+
+    local speed = anim.playbackSpeed or 1.0
+
+    pcall(function()
+        if anim.start and anim.stop then
+            local startPos = anim.start
+            local endPos = anim.stop
+            
+            currentAnimationTrack:Play(0.1, 1, speed)
+            currentAnimationTrack.TimePosition = startPos
+            
+            animationConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if currentAnimationTrack and currentAnimationTrack.TimePosition >= endPos then
+                    currentAnimationTrack.TimePosition = startPos
+                end
+            end)
+            
+        elseif anim.start and speed == 0 then
+            local startPos = anim.start
+            currentAnimationTrack:Play(0.1, 1, 1)
+            currentAnimationTrack.TimePosition = startPos
+            currentAnimationTrack:AdjustSpeed(0)
+            
+            if animationConnection then
+                animationConnection:Disconnect()
+                animationConnection = nil
+            end
+            
+        else
+            currentAnimationTrack.Looped = true
+            currentAnimationTrack:Play(0.1, 1, speed)
+            
+            if animationConnection then
+                animationConnection:Disconnect()
+                animationConnection = nil
+            end
+            
+            if anim.name ~= "zombie" and anim.name ~= "headless and korblox" then
+                animationConnection = humanoid.AnimationPlayed:Connect(function(track)
+                    if track ~= currentAnimationTrack then
+                        track:Stop()
+                    end
+                end)
+            end
+        end
+    end)
+    
+    currentAnimation = anim.name
+end
+
+local function updateAnimButtonState(button, animName)
+    pcall(function()
+        if currentAnimation == animName then
+            button.BackgroundColor3 = Color3.fromRGB(60, 180, 60)
+        else
+            button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+        end
+    end)
+end
+
+local function isFavorite(animInfo)
+    for _, favAnim in ipairs(favorites) do
+        if favAnim and favAnim.id == animInfo.id then
+            return true
+        end
+    end
+    return false
+end
+
+local function updateStarIcon(starLabel, animInfo)
+    pcall(function()
+        starLabel.Text = isFavorite(animInfo) and FULL_STAR_EMOJI or EMPTY_STAR_EMOJI
+    end)
+end
+
+local function toggleFavorite(animInfo, starLabel)
+    local favIndex = nil
+    for i, favAnim in ipairs(favorites) do
+        if favAnim and favAnim.id == animInfo.id then
+            favIndex = i
+            break
+        end
+    end
+
+    if favIndex then
+        table.remove(favorites, favIndex)
+    else
+        table.insert(favorites, animInfo)
+    end
+
+    if starLabel then
+        updateStarIcon(starLabel, animInfo)
+    end
+
+    createAnimationButtons(currentTab)
+end
+
+local function createAnimationButtons(tabName)
+    for _, child in pairs(animFrame:GetChildren()) do
+        if child:IsA("GuiObject") and not child:IsA("UILayout") then
+            child:Destroy()
+        end
+    end
+    
+    animButtons = {}
+    
+    local anims = {}
+    if tabName == "favourites⭐" then
+        anims = favorites
+        local rows = math.ceil(#anims / 2)
+        animFrame.CanvasSize = UDim2.new(0, 0, 0, rows * 28 + 6)
+    elseif tabName == "Anim Packs" then
+        local normalSpeed = 20
+        local slowSpeed = 2
+        local firstRunDuration = 4.3
+        local repeatRunDuration = 5.8
+        local slowDuration = 3.3
+        local fadeTime = 0.35
+
+        local moving = false
+        local currentPhase = "first"
+        local timer = 0
+        local phaseActive = false
+
+        local function startAnimPack()
+            local char = player.Character
+            if not char then return end
+            humanoid = char:WaitForChild("Humanoid")
+            humanoid.WalkSpeed = normalSpeed
+            
+            local idleAnim = Instance.new("Animation")
+            idleAnim.AnimationId = "rbxassetid://121480327509940"
+            local runAnim = Instance.new("Animation")
+            runAnim.AnimationId = "rbxassetid://121350640829746"
+            
+            idleTrack = humanoid:LoadAnimation(idleAnim)
+            idleTrack.Priority = Enum.AnimationPriority.Action
+            runTrack = humanoid:LoadAnimation(runAnim)
+            runTrack.Priority = Enum.AnimationPriority.Action
+            
+            humanoid.Running:Connect(function(speed)
+                if animPackActive then
+                    if speed > 1 then
+                        if idleTrack and idleTrack.IsPlaying then idleTrack:Stop(fadeTime) end
+                        if runTrack and not runTrack.IsPlaying then runTrack:Play(fadeTime) end
+                        moving = true
+                    else
+                        if runTrack and runTrack.IsPlaying then runTrack:Stop(fadeTime) end
+                        if idleTrack and not idleTrack.IsPlaying then idleTrack:Play(fadeTime) end
+                        moving = false
+                        timer = 0
+                        phaseActive = false
+                        currentPhase = "first"
+                    end
+                end
+            end)
+            
+            taskLoop = task.spawn(function()
+                while humanoid.Parent do
+                    task.wait(0.1)
+                    if animPackActive and moving then
+                        timer += 0.1
+                        local runDuration = (currentPhase == "first") and firstRunDuration or repeatRunDuration
+                        if not phaseActive and timer >= runDuration then
+                            phaseActive = true
+                            humanoid.WalkSpeed = slowSpeed
+                            task.delay(slowDuration, function()
+                                if animPackActive and humanoid.Parent then
+                                    humanoid.WalkSpeed = normalSpeed
+                                    timer = 0
+                                    phaseActive = false
+                                    currentPhase = "repeat"
+                                elseif humanoid.Parent then
+                                    humanoid.WalkSpeed = 16
+                                end
+                            end)
+                        end
+                    end
+                end
+            end)
+            
+            if not moving and not idleTrack.IsPlaying then
+                idleTrack:Play(fadeTime)
+            end
+        end
+
+        wallyButton = Instance.new("TextButton")
+        wallyButton.Name = "wallyButton"
+        wallyButton.Size = UDim2.new(1, -6, 1, -6)
+        wallyButton.Position = UDim2.new(0, 3, 0, 3)
+        wallyButton.BackgroundColor3 = animPackActive and Color3.fromRGB(60, 180, 60) or Color3.fromRGB(65, 65, 65)
+        wallyButton.Text = animPackActive and "Wally West: ON" or "Wally West: OFF"
+        wallyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        wallyButton.TextSize = 10
+        wallyButton.Font = Enum.Font.GothamBold
+        wallyButton.BorderSizePixel = 0
+        wallyButton.Parent = animFrame
+        
+        local wallyCorner = Instance.new("UICorner")
+        wallyCorner.CornerRadius = UDim.new(0, 3)
+        wallyCorner.Parent = wallyButton
+        
+        wallyButton.Activated:Connect(function()
+            stopCurrentAnimation()
+            animPackActive = not animPackActive
+            if animPackActive then
+                wallyButton.Text = "Wally West: ON"
+                wallyButton.BackgroundColor3 = Color3.fromRGB(60, 180, 60)
+                startAnimPack()
+            else
+                wallyButton.Text = "Wally West: OFF"
+                wallyButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+                stopAnimPack()
+            end
+        end)
+        
+        player.CharacterAdded:Connect(function(newCharacter)
+            if animPackActive then
+                startAnimPack()
+            end
+        end)
+        
+        animFrame.CanvasSize = UDim2.new(0, 0, 0, 32)
+    else
+        anims = animations[tabName]
+    end
+
+    if anims then
+        for i, anim in ipairs(anims) do
+            local animButton = Instance.new("TextButton")
+            animButton.Size = UDim2.new(1, -6, 1, -6)
+            animButton.Position = UDim2.new(0, 3, 0, 3)
+            animButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+            animButton.Text = anim.name
+            animButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            animButton.TextSize = 10
+            animButton.Font = Enum.Font.GothamBold
+            animButton.BorderSizePixel = 0
+            animButton.TextWrapped = true
+            animButton.Parent = animFrame
+            
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0, 3)
+            btnCorner.Parent = animButton
+            
+            local starLabel = Instance.new("TextLabel")
+            starLabel.Name = "FavoriteStar"
+            starLabel.Size = UDim2.new(0, 20, 0, 20)
+            starLabel.Position = UDim2.new(1, -23, 0.5, -10)
+            starLabel.BackgroundTransparency = 1
+            starLabel.TextSize = 18
+            starLabel.Font = Enum.Font.SourceSansBold
+            starLabel.TextColor3 = Color3.new(1, 1, 0)
+            starLabel.Parent = animButton
+            updateStarIcon(starLabel, anim)
+            
+            local starButtonOverlay = Instance.new("TextButton")
+            starButtonOverlay.Size = UDim2.new(0, 20, 0, 20)
+            starButtonOverlay.Position = UDim2.new(1, -23, 0.5, -10)
+            starButtonOverlay.BackgroundTransparency = 1
+            starButtonOverlay.Text = ""
+            starButtonOverlay.Parent = animButton
+
+            starButtonOverlay.Activated:Connect(function()
+                toggleFavorite(anim, starLabel)
+            end)
+            
+            animButtons[anim.name] = animButton
+            
+            animButton.Activated:Connect(function()
+                if currentAnimation == anim.name then
+                    stopCurrentAnimation()
+                else
+                    stopCurrentAnimation()
+                    playAnimation(anim)
+                end
+                
+                for name, button in pairs(animButtons) do
+                    updateAnimButtonState(button, name)
+                end
+            end)
+            
+            updateAnimButtonState(animButton, anim.name)
+        end
+
+        local rows = math.ceil(#anims / 2)
+        animFrame.CanvasSize = UDim2.new(0, 0, 0, rows * 28 + 6)
+    end
+end
+local function updateTabColors()
+    for tabName, button in pairs(tabButtons) do
+        button.BackgroundColor3 = tabName == currentTab and Color3.fromRGB(70, 120, 200) or Color3.fromRGB(60, 60, 60)
+    end
+    favoritesButton.BackgroundColor3 = currentTab == "favourites⭐" and Color3.fromRGB(70, 120, 200) or Color3.fromRGB(60, 60, 60)
+end
+
+local function switchTab(newTabName)
+    if currentTab ~= newTabName then
+        currentTab = newTabName
+        updateTabColors()
+        createAnimationButtons(newTabName)
+    end
+end
+
+local function createTabs()
+    for _, child in pairs(tabBar:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+    
+    tabButtons = {}
+    
+    local tabOrder = {"dance", "actions", "magic", "building", "animal", "DEATH", "NSFW", "Anim Packs"}
+    
+    local xOffset = 0
+    local totalWidth = 0
+
+    for _, tabName in ipairs(tabOrder) do
+        if animations[tabName] or tabName == "Anim Packs" then
+            local tabButton = Instance.new("TextButton")
+            tabButton.Name = tabName .. "Tab"
+            tabButton.Size = UDim2.new(0, 60, 1, -4)
+            tabButton.Position = UDim2.new(0, xOffset, 0, 2)
+            tabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            tabButton.Text = tabName
+            tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            tabButton.TextSize = 11
+            tabButton.Font = Enum.Font.GothamBold
+            tabButton.BorderSizePixel = 0
+            tabButton.Parent = tabBar
+            
+            local tabBtnCorner = Instance.new("UICorner")
+            tabBtnCorner.CornerRadius = UDim.new(0, 3)
+            tabBtnCorner.Parent = tabButton
+            
+            tabButtons[tabName] = tabButton
+            
+            tabButton.Activated:Connect(function()
+                switchTab(tabName)
+            end)
+
+            xOffset = xOffset + 62
+            totalWidth = totalWidth + 62
+        end
+    end
+    
+    tabBar.CanvasSize = UDim2.new(0, totalWidth, 0, 0)
+end
+
+local function toggleMinimize()
+    isMinimized = not isMinimized
+    
+    local targetSize = isMinimized and UDim2.new(0, 280, 0, 25) or UDim2.new(0, 280, 0, 200)
+    
+    local tween = tweenService:Create(mainFrame, 
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = targetSize}
+    )
+    
+    tween:Play()
+    contentFrame.Visible = not isMinimized
+    minimizeButton.Text = isMinimized and "+" or "-"
+end
+
+createTabs()
+updateTabColors()
+createAnimationButtons(currentTab)
+
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+titleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+userInputService.InputChanged:Connect(function(input, gameProcessed)
+    if dragging and not gameProcessed and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, 
+                                      startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+favoritesButton.Activated:Connect(function()
+    switchTab("favourites⭐")
+end)
+minimizeButton.Activated:Connect(toggleMinimize)
+closeButton.Activated:Connect(function()
+    stopCurrentAnimation()
+    screenGui:Destroy()
+end)
+
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoid = character:WaitForChild("Humanoid")
+    animationTracks = {}
+    tabButtons = {}
+    stopCurrentAnimation()
+    createTabs()
+    updateTabColors()
+    createAnimationButtons(currentTab)
+end)
